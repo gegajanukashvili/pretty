@@ -1,0 +1,1384 @@
+
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fff9f7">
+  <title></title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+
+  
+<style>
+  body {
+    font-family: 'Noto Sans Georgian', 'Space Grotesk', sans-serif;
+  }
+
+  /* BOOKING LAYOUT */
+
+  .details-content {
+    width: 100%;
+    max-width: 570px;
+  }
+
+  .plan-intro {
+    margin: 10px 0 17px;
+    color: #8d7773;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .booking-panel {
+    width: 100%;
+    padding: 16px;
+    margin-top: 20px;
+    border: 1px solid #f0e5e1;
+    border-radius: 19px;
+    background: rgba(255, 255, 255, .82);
+    box-shadow: 0 12px 35px rgba(100, 65, 60, .045);
+  }
+
+  /* PLAN GRID */
+
+  .plan-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+  }
+
+  .plan-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    min-height: 76px;
+    padding: 10px;
+    border: 1px solid #f0e5e1;
+    border-radius: 13px;
+    background: #fffdfc;
+    text-align: left;
+    cursor: pointer;
+    color: #493a38;
+    font-family: inherit;
+    transition:
+      transform .22s ease,
+      border-color .22s ease,
+      background .22s ease,
+      box-shadow .22s ease;
+  }
+
+  .plan-item:hover {
+    transform: translateY(-2px);
+    border-color: #dfb6ad;
+  }
+
+  .plan-item.selected {
+    border: 1.5px solid #d98f91;
+    background: #fff1f1;
+    box-shadow: 0 4px 15px rgba(217, 143, 145, .12);
+  }
+
+  .plan-item:focus-visible {
+    outline: 2px solid #c98287;
+    outline-offset: 3px;
+  }
+
+  .plan-illustration {
+    position: relative;
+    display: block;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #fbefeb;
+  }
+
+  .plan-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .plan-copy strong {
+    color: #493a38;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .plan-copy small {
+    color: #a18b85;
+    font-size: 9px;
+    line-height: 1.5;
+  }
+
+  .plan-number {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    color: #c7aaa2;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+  }
+
+  .plan-check {
+    position: absolute;
+    right: 8px;
+    bottom: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    border: 1px solid #e9d5d0;
+    border-radius: 50%;
+    background: white;
+    transition: .2s ease;
+  }
+
+  .plan-check::after {
+    content: "";
+    width: 7px;
+    height: 4px;
+    border-left: 1.5px solid transparent;
+    border-bottom: 1.5px solid transparent;
+    transform: rotate(-45deg) translateY(-1px);
+  }
+
+  .plan-item.selected .plan-check {
+    border-color: #cb8588;
+    background: #cb8588;
+  }
+
+  .plan-item.selected .plan-check::after {
+    border-color: white;
+  }
+
+  /* ILLUSTRATION 01 */
+
+  .noodle-bowl {
+    position: absolute;
+    left: 7px;
+    bottom: 9px;
+    width: 34px;
+    height: 19px;
+    border: 2px solid #a66f5f;
+    border-top: 3px solid #a66f5f;
+    border-radius: 5px 5px 22px 22px;
+    background: #f8dcd1;
+  }
+
+  .noodle-bowl::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: -8px;
+    width: 24px;
+    height: 9px;
+    border-top: 2px solid #a66f5f;
+    border-radius: 50%;
+  }
+
+  .noodle-bowl::after {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: -13px;
+    width: 20px;
+    height: 10px;
+    border-top: 2px solid #d08a72;
+    border-radius: 50%;
+    transform: rotate(-8deg);
+  }
+
+  .noodle-steam {
+    position: absolute;
+    top: 4px;
+    left: 17px;
+    width: 9px;
+    height: 13px;
+    border-right: 1.5px solid #c58e7c;
+    border-radius: 50%;
+    transform: rotate(15deg);
+  }
+
+  .noodle-chopstick {
+    position: absolute;
+    top: 8px;
+    left: 27px;
+    width: 2px;
+    height: 19px;
+    background: #9b6758;
+    transform: rotate(38deg);
+    border-radius: 2px;
+  }
+
+  /* ILLUSTRATION 02 */
+
+  .soup-bowl {
+    position: absolute;
+    left: 8px;
+    bottom: 9px;
+    width: 32px;
+    height: 19px;
+    border: 2px solid #a66f5f;
+    border-radius: 4px 4px 20px 20px;
+    background: #ead4b5;
+  }
+
+  .soup-bowl::before {
+    content: "";
+    position: absolute;
+    top: -6px;
+    left: -3px;
+    width: 34px;
+    height: 8px;
+    border: 2px solid #a66f5f;
+    border-radius: 50%;
+    background: #f6e5c9;
+  }
+
+  .soup-mushroom {
+    position: absolute;
+    top: 16px;
+    left: 20px;
+    width: 11px;
+    height: 8px;
+    border-radius: 9px 9px 3px 3px;
+    background: #bd9479;
+    z-index: 2;
+  }
+
+  .soup-mushroom::after {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 6px;
+    width: 3px;
+    height: 6px;
+    background: #a66f5f;
+  }
+
+  .soup-herb {
+    position: absolute;
+    top: 12px;
+    left: 29px;
+    width: 7px;
+    height: 5px;
+    border-radius: 100% 0;
+    background: #899b75;
+    transform: rotate(-25deg);
+    z-index: 3;
+  }
+
+  /* ILLUSTRATION 03 */
+
+  .mountain-back {
+    position: absolute;
+    left: 3px;
+    bottom: 10px;
+    width: 43px;
+    height: 28px;
+    background: #e9c4b5;
+    clip-path: polygon(0 100%, 36% 15%, 55% 57%, 75% 0, 100% 100%);
+  }
+
+  .mountain-front {
+    position: absolute;
+    left: 3px;
+    bottom: 10px;
+    width: 43px;
+    height: 21px;
+    background: #b77e6e;
+    clip-path: polygon(0 100%, 35% 40%, 52% 70%, 75% 20%, 100% 100%);
+  }
+
+  .mountain-moon {
+    position: absolute;
+    top: 7px;
+    right: 8px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #d6a58f;
+    box-shadow: -4px -2px 0 #fbefeb;
+  }
+
+  .mountain-star {
+    position: absolute;
+    top: 12px;
+    left: 9px;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #b77e6e;
+    box-shadow: 12px -8px 0 #b77e6e, 25px 3px 0 #b77e6e;
+  }
+
+  /* ILLUSTRATION 04 */
+
+  .game-frame {
+    position: absolute;
+    left: 9px;
+    top: 5px;
+    width: 31px;
+    height: 38px;
+    border: 2px solid #a66f5f;
+    border-radius: 7px;
+    background: #f8e3da;
+  }
+
+  .game-screen {
+    position: absolute;
+    top: 4px;
+    left: 3px;
+    width: 21px;
+    height: 19px;
+    border-radius: 3px;
+    background: #e9c2b4;
+    overflow: hidden;
+  }
+
+  .game-screen::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 3px;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #a66f5f;
+    border-radius: 50%;
+  }
+
+  .game-screen::after {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 8px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #a66f5f;
+  }
+
+  .game-button {
+    position: absolute;
+    bottom: 4px;
+    left: 6px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #a66f5f;
+    box-shadow: 10px 0 0 #d08a72;
+  }
+
+  /* DATE AND TIME */
+
+  .booking-divider {
+    width: 100%;
+    height: 1px;
+    margin: 19px 0;
+    background: #f0e5e1;
+  }
+
+  .booking-date-title {
+    margin-bottom: 13px;
+  }
+
+  .booking-date-title .small-label {
+    margin-bottom: 5px;
+  }
+
+  .booking-date-title p {
+    margin: 0;
+    color: #987f79;
+    font-size: 11px;
+  }
+
+  .booking-panel .form-box {
+    margin-top: 0;
+  }
+
+  .booking-panel .confirm-button {
+    margin-top: 10px;
+  }
+
+  .field label,
+  .confirm-button,
+  .back-button,
+  .music-toggle {
+    font-family: 'Noto Sans Georgian', sans-serif;
+  }
+
+  /* SUCCESS PAGE SELECTED PLANS */
+
+  .result-plans {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 15px;
+  }
+
+  .result-plan-tag {
+    padding: 7px 10px;
+    border: 1px solid #efd9d5;
+    border-radius: 20px;
+    background: #fff2ef;
+    color: #946c65;
+    font-size: 10px;
+  }
+
+  .selection-hint {
+    margin: 12px 0 0;
+    color: #a18b85;
+    font-size: 10px;
+    text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    .booking-panel {
+      padding: 11px;
+      border-radius: 15px;
+    }
+
+    .plan-list {
+      gap: 7px;
+    }
+
+    .plan-item {
+      gap: 7px;
+      min-height: 76px;
+      padding: 8px;
+    }
+
+    .plan-illustration {
+      flex-basis: 39px;
+      width: 39px;
+      height: 39px;
+    }
+
+    .plan-copy strong {
+      font-size: 10px;
+    }
+
+    .plan-copy small {
+      font-size: 8px;
+    }
+  }
+
+/* ALL PLANS ICON */
+
+.all-layers {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 28px;
+  height: 28px;
+}
+
+.all-layers span {
+  position: absolute;
+  left: 3px;
+  width: 23px;
+  height: 13px;
+  border: 2px solid #a66f5f;
+  border-radius: 4px;
+  background: #f8dcd1;
+  transform: rotate(30deg) skewX(-30deg);
+}
+
+.all-layers span:nth-child(1) {
+  top: 1px;
+  z-index: 3;
+}
+
+.all-layers span:nth-child(2) {
+  top: 8px;
+  z-index: 2;
+  background: #f3cfc4;
+}
+
+.all-layers span:nth-child(3) {
+  top: 15px;
+  z-index: 1;
+  background: #e9b9ad;
+}
+
+/* =====================================
+   PLAN ILLUSTRATIONS — COMMON
+===================================== */
+
+.plan-illustration {
+  position: relative;
+  display: block;
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+  overflow: hidden;
+}
+
+/* =====================================
+   01 — ATRIA / NOODLES
+===================================== */
+
+.noodle-bowl {
+  position: absolute;
+  left: 9px;
+  bottom: 9px;
+  width: 36px;
+  height: 19px;
+  background: #e9b9ad;
+  border: 2px solid #a66f5f;
+  border-radius: 4px 4px 18px 18px;
+}
+
+.noodle-bowl::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: -5px;
+  width: 40px;
+  height: 5px;
+  border: 2px solid #a66f5f;
+  border-radius: 50%;
+  background: #f8dcd1;
+}
+
+.noodle-chopstick {
+  position: absolute;
+  left: 17px;
+  top: 7px;
+  width: 2px;
+  height: 24px;
+  background: #8f5f54;
+  transform: rotate(-35deg);
+  z-index: 2;
+}
+
+.noodle-chopstick::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: -2px;
+  width: 2px;
+  height: 24px;
+  background: #8f5f54;
+}
+
+.noodle-steam {
+  position: absolute;
+  left: 25px;
+  top: 4px;
+  width: 8px;
+  height: 12px;
+  border-left: 2px solid #c58e80;
+  border-radius: 50%;
+  transform: rotate(15deg);
+}
+
+/* =====================================
+   02 — MUSHROOM SOUP
+===================================== */
+
+.soup-bowl {
+  position: absolute;
+  left: 9px;
+  bottom: 9px;
+  width: 36px;
+  height: 19px;
+  background: #e9b9ad;
+  border: 2px solid #a66f5f;
+  border-radius: 4px 4px 18px 18px;
+}
+
+.soup-bowl::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: -5px;
+  width: 40px;
+  height: 6px;
+  background: #f8dcd1;
+  border: 2px solid #a66f5f;
+  border-radius: 50%;
+}
+
+.soup-mushroom {
+  position: absolute;
+  left: 20px;
+  top: 12px;
+  width: 15px;
+  height: 12px;
+  border-radius: 9px 9px 3px 3px;
+  background: #c58e80;
+  border: 2px solid #a66f5f;
+  z-index: 2;
+}
+
+.soup-mushroom::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  width: 4px;
+  height: 7px;
+  background: #f8dcd1;
+}
+
+.soup-herb {
+  position: absolute;
+  left: 32px;
+  top: 7px;
+  width: 8px;
+  height: 5px;
+  border-radius: 100% 0;
+  background: #8d9b70;
+  transform: rotate(-25deg);
+  z-index: 3;
+}
+
+/* =====================================
+   03 — MTATSMINDA / MOUNTAINS
+===================================== */
+
+.mountain-moon {
+  position: absolute;
+  right: 9px;
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #a66f5f;
+  border-radius: 50%;
+}
+
+.mountain-moon::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: -3px;
+  width: 11px;
+  height: 11px;
+  background: #f8e9df;
+  border-radius: 50%;
+}
+
+.mountain-star {
+  position: absolute;
+  left: 10px;
+  top: 9px;
+  width: 4px;
+  height: 4px;
+  background: #c58e80;
+  transform: rotate(45deg);
+}
+
+.mountain-back {
+  position: absolute;
+  left: 3px;
+  bottom: 8px;
+  width: 42px;
+  height: 27px;
+  background: #d9a99a;
+  clip-path: polygon(0 100%, 42% 0, 100% 100%);
+}
+
+.mountain-front {
+  position: absolute;
+  left: 17px;
+  bottom: 8px;
+  width: 34px;
+  height: 22px;
+  background: #a66f5f;
+  clip-path: polygon(0 100%, 48% 0, 100% 100%);
+}
+
+/* =====================================
+   04 — ISPOINT / GAME
+===================================== */
+
+.game-frame {
+  position: absolute;
+  left: 10px;
+  top: 6px;
+  width: 34px;
+  height: 43px;
+  background: #e9b9ad;
+  border: 2px solid #a66f5f;
+  border-radius: 7px;
+  transform: rotate(-5deg);
+}
+
+.game-screen {
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  width: 20px;
+  height: 18px;
+  background: #f8dcd1;
+  border: 2px solid #a66f5f;
+  border-radius: 3px;
+}
+
+.game-screen::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 5px;
+  width: 6px;
+  height: 6px;
+  background: #a66f5f;
+  border-radius: 50%;
+}
+
+.game-button {
+  position: absolute;
+  left: 7px;
+  bottom: 5px;
+  width: 6px;
+  height: 6px;
+  background: #a66f5f;
+  border-radius: 50%;
+}
+
+.game-button::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 0;
+  width: 6px;
+  height: 6px;
+  background: #a66f5f;
+  border-radius: 50%;
+}
+
+/* =====================================
+   05 — KARTING
+===================================== */
+
+.kart-wheel {
+  position: absolute;
+  bottom: 10px;
+  width: 9px;
+  height: 16px;
+  border: 2px solid #8f5f54;
+  border-radius: 4px;
+  background: #6f514a;
+  z-index: 1;
+}
+
+.kart-wheel-left {
+  left: 7px;
+}
+
+.kart-wheel-right {
+  right: 7px;
+}
+
+.kart-body {
+  position: absolute;
+  left: 10px;
+  top: 20px;
+  width: 28px;
+  height: 13px;
+  border: 2px solid #a66f5f;
+  border-radius: 7px 9px 5px 5px;
+  background: #e9b9ad;
+  transform: skew(-12deg);
+  z-index: 2;
+}
+
+.kart-body::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: -5px;
+  width: 13px;
+  height: 7px;
+  border: 2px solid #a66f5f;
+  border-radius: 5px 5px 2px 2px;
+  background: #f8dcd1;
+}
+
+.kart-seat {
+  position: absolute;
+  left: 19px;
+  top: 14px;
+  width: 9px;
+  height: 12px;
+  border-radius: 4px 4px 2px 2px;
+  background: #a66f5f;
+  z-index: 2;
+}
+
+.kart-steering {
+  position: absolute;
+  left: 26px;
+  top: 12px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #a66f5f;
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.kart-steering::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 2px;
+  height: 5px;
+  background: #a66f5f;
+}
+
+/* =====================================
+   06 — MARTKOPI / MONASTERY
+===================================== */
+
+.martkop-building {
+  position: absolute;
+  left: 7px;
+  bottom: 8px;
+  width: 38px;
+  height: 21px;
+  background: #e9b9ad;
+  border: 2px solid #a66f5f;
+  border-radius: 4px 4px 2px 2px;
+}
+
+.martkop-dome {
+  position: absolute;
+  left: 17px;
+  top: 7px;
+  width: 18px;
+  height: 15px;
+  background: #e9b9ad;
+  border: 2px solid #a66f5f;
+  border-radius: 50% 50% 0 0;
+  z-index: 2;
+}
+
+.martkop-dome::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: -9px;
+  width: 2px;
+  height: 9px;
+  background: #a66f5f;
+}
+
+.martkop-cross {
+  position: absolute;
+  left: 25px;
+  top: 0;
+  width: 2px;
+  height: 9px;
+  background: #a66f5f;
+  z-index: 3;
+}
+
+.martkop-cross::after {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: 2px;
+  width: 8px;
+  height: 2px;
+  background: #a66f5f;
+}
+
+.martkop-door {
+  position: absolute;
+  left: 23px;
+  bottom: 8px;
+  width: 7px;
+  height: 12px;
+  background: #a66f5f;
+  border-radius: 4px 4px 0 0;
+  z-index: 2;
+}
+
+.martkop-window {
+  position: absolute;
+  bottom: 19px;
+  width: 5px;
+  height: 6px;
+  background: #a66f5f;
+  border-radius: 3px 3px 0 0;
+  z-index: 3;
+}
+
+.martkop-window-left {
+  left: 12px;
+}
+
+.martkop-window-right {
+  right: 12px;
+}
+
+/* =====================================
+   07 — ALL / LAYERS
+===================================== */
+
+.all-layers {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 34px;
+  height: 34px;
+}
+
+.all-layers span {
+  position: absolute;
+  left: 3px;
+  width: 25px;
+  height: 13px;
+  border: 2px solid #a66f5f;
+  border-radius: 4px;
+  background: #f8dcd1;
+  transform: rotate(30deg) skewX(-30deg);
+}
+
+.all-layers span:nth-child(1) {
+  top: 1px;
+  z-index: 3;
+}
+
+.all-layers span:nth-child(2) {
+  top: 8px;
+  z-index: 2;
+  background: #f3cfc4;
+}
+
+.all-layers span:nth-child(3) {
+  top: 15px;
+  z-index: 1;
+  background: #e9b9ad;
+}
+
+</style>
+
+</head>
+
+<body>
+
+  <div class="noise"></div>
+
+  <header class="topbar">
+    <a class="logo" href="#">S/01</a>
+
+    <div class="top-status">
+      <span class="status-dot"></span>
+      მხოლოდ ჩვენ ორს შორის
+    </div>
+
+    <div class="top-index">2026 / 001</div>
+  </header>
+
+  <main class="main">
+
+    <!-- STEP 1 -->
+    <section class="screen active" id="screen-question">
+
+      <div class="eyebrow">
+        <span>ერთი მნიშვნელოვანი კითხვა</span>
+        <span class="line"></span>
+        <span>01 — 02</span>
+      </div>
+
+      <div class="content">
+
+        <div class="small-label">გადაწყვეტილების დროა</div>
+
+        <h1>
+          ნინიკო
+          <br>
+          <span class="accent">სამსახურის მერე სადმე წავიდეთ?</span>
+        </h1>
+
+        <div class="button-stage" id="buttonStage">
+
+          <button class="choice yes-button" id="yesButton">
+            კი <span class="button-arrow">→</span>
+          </button>
+
+          <button class="choice no-button" id="noButton">
+            არა
+          </button>
+
+          <div class="no-question" id="noQuestion"></div>
+
+        </div>
+
+        <div class="hint" id="hint">
+          <span class="hint-icon">↳</span>
+          <span>ერთი ღილაკი ცოტა უცნაურად იქცევა.</span>
+        </div>
+
+      </div>
+
+      <div class="bottom-note">
+        <span>ბევრს ნუ იფიქრებ</span>
+        <span>შენ იცი, რაც უნდა ქნა</span>
+      </div>
+
+    </section>
+
+
+    <!-- STEP 2 -->
+    <section class="screen" id="screen-details">
+
+      <div class="eyebrow">
+        <span>გადაწყვეტილება მიღებულია</span>
+        <span class="line"></span>
+        <span>02 — 02</span>
+      </div>
+
+      <div class="content details-content">
+
+        <div class="small-label">მშვენიერი არჩევანია.</div>
+
+        <h1>
+          შენ პროსტა 
+          <br>
+          <span class="accent">თითი დაადე.</span>
+        </h1>
+
+       
+
+        <div class="booking-panel">
+
+          <!-- SELECTABLE PLANS -->
+          <div class="plan-list">
+
+             <button type="button" class="plan-item" data-plan="ატრია" aria-pressed="false">
+    <span class="plan-illustration">
+      <span class="noodle-steam"></span>
+      <span class="noodle-chopstick"></span>
+      <span class="noodle-bowl"></span>
+    </span>
+    <span class="plan-copy">
+      <strong>ატრია</strong>
+      <small>გემრიელი დასაწყისი</small>
+    </span>
+    <span class="plan-number">01</span>
+    <span class="plan-check"></span>
+  </button>
+
+  <!-- 02 — MUSHROOM SOUP -->
+  <button type="button" class="plan-item" data-plan="სოკოს კრემ-სუპი" aria-pressed="false">
+    <span class="plan-illustration">
+      <span class="soup-mushroom"></span>
+      <span class="soup-herb"></span>
+      <span class="soup-bowl"></span>
+    </span>
+    <span class="plan-copy">
+      <strong>სოკოს კრემ-სუპი</strong>
+      <small>ცოტა გემრიელი განებივრება</small>
+    </span>
+    <span class="plan-number">02</span>
+    <span class="plan-check"></span>
+  </button>
+
+  <!-- 03 — MTATSMINDA -->
+  <button type="button" class="plan-item" data-plan="მთაწმინდა" aria-pressed="false">
+    <span class="plan-illustration">
+      <span class="mountain-moon"></span>
+      <span class="mountain-star"></span>
+      <span class="mountain-back"></span>
+      <span class="mountain-front"></span>
+    </span>
+    <span class="plan-copy">
+      <strong>მთაწმინდა</strong>
+      <small>ხედები და გასეირნება</small>
+    </span>
+    <span class="plan-number">03</span>
+    <span class="plan-check"></span>
+  </button>
+
+  <!-- 04 — ISPOINT -->
+  <button type="button" class="plan-item" data-plan="ისფოინთი" aria-pressed="false">
+    <span class="plan-illustration">
+      <span class="game-frame">
+        <span class="game-screen"></span>
+        <span class="game-button"></span>
+      </span>
+    </span>
+    <span class="plan-copy">
+      <strong>ისფოინთი</strong>
+      <small>ცოტა გართობა</small>
+    </span>
+    <span class="plan-number">04</span>
+    <span class="plan-check"></span>
+  </button>
+
+  <!-- 05 — KARTING -->
+  <button type="button" class="plan-item" data-plan="კარტინგები" aria-pressed="false">
+    <span class="plan-illustration">
+      <span class="kart-wheel kart-wheel-left"></span>
+      <span class="kart-wheel kart-wheel-right"></span>
+      <span class="kart-body"></span>
+      <span class="kart-seat"></span>
+      <span class="kart-steering"></span>
+    </span>
+    <span class="plan-copy">
+      <strong>კარტინგები</strong>
+      <small>გაზაობა და ადრენალინი</small>
+    </span>
+    <span class="plan-number">05</span>
+    <span class="plan-check"></span>
+  </button>
+
+  <!-- 06 — MARTKOPI -->
+  <button type="button" class="plan-item" data-plan="მარტყოფის ექსკურსია" aria-pressed="false">
+    <span class="plan-illustration">
+      <span class="martkop-building"></span>
+      <span class="martkop-dome"></span>
+      <span class="martkop-cross"></span>
+      <span class="martkop-door"></span>
+      <span class="martkop-window martkop-window-left"></span>
+      <span class="martkop-window martkop-window-right"></span>
+    </span>
+    <span class="plan-copy">
+      <strong>მარტყოფის ექსკურსია</strong>
+      <small>გააგრძელე საქართველოს ისტორია</small>
+    </span>
+    <span class="plan-number">06</span>
+    <span class="plan-check"></span>
+  </button>
+
+  <!-- 07 — ALL -->
+  <button type="button" class="plan-item" data-plan="ყველა" aria-pressed="false">
+    <span class="plan-illustration">
+      <span class="all-layers">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+    </span>
+    <span class="plan-copy">
+      <strong>ყველა</strong>
+      <small>ყველაფერი ერთად ♡</small>
+    </span>
+    <span class="plan-number">07</span>
+    <span class="plan-check"></span>
+  </button>
+
+
+          </div>
+
+          <p class="selection-hint" id="selectionHint">
+            შეგიძლია რამდენიმე ვარიანტიც მონიშნო.
+          </p>
+
+          <div class="booking-divider"></div>
+
+          <!-- DATE AND TIME -->
+          <div class="booking-date-title">
+            <div class="small-label">როდის წავიდეთ?</div>
+            <p>შეარჩიე შენთვის სასურველი დრო.</p>
+          </div>
+
+          <div class="form-box">
+
+            <div class="field">
+              <label for="date">თარიღი</label>
+              <input type="date" id="date" required>
+            </div>
+
+            <div class="field">
+              <label for="time">დრო</label>
+              <input type="time" id="time" required>
+            </div>
+
+            <button class="confirm-button" id="confirmButton">
+              <span>დადასტურება</span>
+              <span>↗</span>
+            </button>
+
+          </div>
+
+        </div>
+
+        <!-- MUSIC CONTROL -->
+        <button class="music-toggle" id="musicToggle" aria-label="მუსიკის ჩართვა ან გამორთვა">
+          <span id="musicIcon">♫</span>
+          <span id="musicText">×</span>
+        </button>
+
+        <button class="back-button" id="backButton">
+         
+        </button>
+
+      </div>
+
+      <div class="bottom-note">
+        <span>თითქმის მზად ვართ</span>
+        <span>ერთი ბოლო ნაბიჯი</span>
+      </div>
+
+    </section>
+
+
+    <!-- STEP 3 -->
+    <section class="screen" id="screen-success">
+
+      <div class="eyebrow">
+        <span>ყველაფერი მზადაა</span>
+        <span class="line"></span>
+        <span>დასრულებულია</span>
+      </div>
+
+      <div class="content success-content">
+
+        <div class="success-mark">✓</div>
+
+        <div class="small-label">ოფიციალურად დადასტურდა</div>
+
+        <h1>
+          ვინც არა ცანცარა
+          <br>
+          <span class="accent"></span>
+        </h1>
+
+        <div class="result-box">
+
+          <div class="result-row">
+            <span>თარიღი</span>
+            <span id="resultDate">—</span>
+          </div>
+
+          <div class="result-row">
+            <span>დრო</span>
+            <span id="resultTime">—</span>
+          </div>
+
+          <div class="result-row">
+            <span>არჩეული აქტივობები</span>
+            <span></span>
+          </div>
+
+          <div class="result-plans" id="resultPlans">
+          </div>
+
+        </div>
+
+        <p class="description">
+          კარგი. ახლა უკვე გვაქვს რაღაც, რასაც უნდა დაველოდოთ.
+        </p>
+
+        <button class="restart-button" id="restartButton">
+         
+        </button>
+
+      </div>
+
+     
+
+    </section>
+
+  </main>
+
+
+  <!-- BACKGROUND MUSIC -->
+  <audio id="backgroundMusic" loop preload="auto">
+    <source src="sounds/background.mp3" type="audio/mpeg">
+  </audio>
+
+
+  <script src="./js/script.js"></script>
+
+  <script>
+    /* PLAN SELECTION */
+
+    const planItems = document.querySelectorAll('.plan-item');
+    const resultPlans = document.getElementById('resultPlans');
+    const selectionHint = document.getElementById('selectionHint');
+
+    function getSelectedPlans() {
+      return Array.from(planItems)
+        .filter(item => item.classList.contains('selected'))
+        .map(item => item.dataset.plan);
+    }
+
+    planItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const selected = item.classList.toggle('selected');
+
+        item.setAttribute('aria-pressed', String(selected));
+
+        const count = getSelectedPlans().length;
+
+        if (selectionHint) {
+          selectionHint.textContent = count
+            ? `მონიშნულია ${count} ვარიანტი.`
+            : 'შეგიძლია რამდენიმე ვარიანტიც მონიშნო.';
+        }
+      });
+    });
+
+    /* SHOW SELECTED PLANS ON SUCCESS PAGE */
+
+    const confirmButton = document.getElementById('confirmButton');
+
+    if (confirmButton) {
+      confirmButton.addEventListener('click', () => {
+        const selected = getSelectedPlans();
+
+        if (resultPlans) {
+          resultPlans.innerHTML = '';
+
+          selected.forEach(name => {
+            const tag = document.createElement('span');
+            tag.className = 'result-plan-tag';
+            tag.textContent = name;
+            resultPlans.appendChild(tag);
+          });
+
+          if (selected.length === 0) {
+            const tag = document.createElement('span');
+            tag.className = 'result-plan-tag';
+            tag.textContent = 'საღამოს გეგმა ჯერ შესარჩევია';
+            resultPlans.appendChild(tag);
+          }
+        }
+      });
+    }
+
+    /* RESET SELECTION ON RESTART */
+
+    const restartButton = document.getElementById('restartButton');
+
+    if (restartButton) {
+      restartButton.addEventListener('click', () => {
+        planItems.forEach(item => {
+          item.classList.remove('selected');
+          item.setAttribute('aria-pressed', 'false');
+        });
+
+        if (selectionHint) {
+          selectionHint.textContent = 'შეგიძლია რამდენიმე ვარიანტიც მონიშნო.';
+        }
+
+        if (resultPlans) {
+          resultPlans.innerHTML = '';
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
