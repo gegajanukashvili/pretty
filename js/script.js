@@ -1089,6 +1089,11 @@ if (backButton) {
    CONFIRM DATE & TIME + DATABASE
 -------------------------------- */
 
+
+/* --------------------------------
+   CONFIRM DATE & TIME + DATABASE
+-------------------------------- */
+
 if (confirmButton) {
   confirmButton.addEventListener("click", async () => {
     if (bookingAnimationRunning || bookingRequestRunning) return;
@@ -1097,24 +1102,14 @@ if (confirmButton) {
     const selectedTime = timeInput.value;
 
     if (!selectedDate || !selectedTime) {
-      if (!selectedDate) {
-        dateInput.focus();
-      } else {
-        timeInput.focus();
-      }
-
+      alert("გთხოვ, აირჩიე თარიღი და დრო.");
       return;
     }
 
     if (selectedDate < getLocalDateString()) {
-      dateInput.value = "";
-      dateInput.focus();
       alert("გთხოვ, აირჩიე დღევანდელი ან მომავალი თარიღი.");
       return;
     }
-
-    // ვიღებთ მონიშნულ აქტივობებს
-    // "ყველა" არ იგზავნება ბაზაში
 
     const selectedPlans = [
       ...document.querySelectorAll(".plan-item.selected")
@@ -1122,7 +1117,7 @@ if (confirmButton) {
       .map(item => item.dataset.plan)
       .filter(plan => plan && plan !== "ყველა");
 
-    if (selectedPlans.length === 0) {
+    if (!selectedPlans.length) {
       alert("გთხოვ, აირჩიე მინიმუმ ერთი აქტივობა.");
       return;
     }
@@ -1136,8 +1131,10 @@ if (confirmButton) {
     try {
       const response = await fetch(BOOKING_API, {
         method: "POST",
+        mode: "cors",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Accept": "application/json"
         },
         body: JSON.stringify({
           date: selectedDate,
@@ -1146,60 +1143,46 @@ if (confirmButton) {
         })
       });
 
-      // ვამოწმებთ, რომ სერვერმა JSON პასუხი დააბრუნა
+      const responseText = await response.text();
+
+      console.log("API status:", response.status);
+      console.log("API response:", responseText);
 
       let result;
 
       try {
-        result = await response.json();
+        result = JSON.parse(responseText);
       } catch {
-        throw new Error("სერვერმა არასწორი პასუხი დააბრუნა.");
+        throw new Error(
+          "PHP სერვერმა JSON-ის ნაცვლად სხვა პასუხი დააბრუნა. შეამოწმე setup.php."
+        );
       }
 
       if (!response.ok || !result.success) {
         throw new Error(
-          result.message || "ჯავშნის შენახვა ვერ მოხერხდა."
+          result.message || `სერვერის შეცდომა: ${response.status}`
         );
       }
 
-      // თარიღის ფორმატირება
+      const dateObject = new Date(`${selectedDate}T12:00:00`);
 
-      const dateObject = new Date(
-        `${selectedDate}T12:00:00`
-      );
-
-      const formattedDate = dateObject.toLocaleDateString(
-        "en-US",
-        {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-          year: "numeric"
-        }
-      );
-
-      // დროის ფორმატირება
+      resultDate.textContent = dateObject.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      });
 
       const [hours, minutes] = selectedTime.split(":");
 
-      const formattedTime = new Date(
-        2000,
-        0,
-        1,
-        Number(hours),
-        Number(minutes)
+      resultTime.textContent = new Date(
+        2000, 0, 1, Number(hours), Number(minutes)
       ).toLocaleTimeString("en-US", {
         hour: "numeric",
         minute: "2-digit"
       });
 
-      resultDate.textContent = formattedDate;
-      resultTime.textContent = formattedTime;
-
-      // წარმატებული შენახვის შემდეგ Success ეკრანი
-
       showScreen(successScreen);
-
       startBookingCelebration();
 
     } catch (error) {
@@ -1207,7 +1190,7 @@ if (confirmButton) {
 
       alert(
         error.message ||
-        "სერვერთან დაკავშირება ვერ მოხერხდა. სცადე თავიდან."
+        "სერვერთან დაკავშირება ვერ მოხერხდა."
       );
 
     } finally {
@@ -1217,6 +1200,7 @@ if (confirmButton) {
     }
   });
 }
+
 
 
 /* --------------------------------
