@@ -1494,3 +1494,32 @@ h1 {
     }
 }
 /* NO MOVEMENT */
+.result-plans {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.result-plan-item {
+    color: #a77c8e;
+    font-family: "DM Sans", sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 7px 16px;
+    border-radius: 20px;
+    background: rgba(233, 154, 182, 0.12);
+    animation: resultPlanAppear .4s ease both;
+}
+
+@keyframes resultPlanAppear {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
