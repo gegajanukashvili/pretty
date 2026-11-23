@@ -975,7 +975,264 @@
 
 <body>
 
-  <div class="noise"></div>
+ 
+<!-- FLOWER PRELOADER -->
+
+  
+
+<!-- PRELOADER -->
+
+<div class="scene" id="flower-preloader">
+    <div class="bouquet">
+
+        <div class="top-text">MADE WITH LOVE</div>
+
+        <svg
+            class="bouquet-svg"
+            id="bouquet-svg"
+            viewBox="0 0 800 900"
+            xmlns="http://www.w3.org/2000/svg"
+            preserveAspectRatio="xMidYMid meet"
+        >
+
+            <defs>
+                <linearGradient id="stemGradient" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#385e43"/>
+                    <stop offset=".5" stop-color="#71966c"/>
+                    <stop offset="1" stop-color="#385e43"/>
+                </linearGradient>
+
+                <linearGradient id="paperGradient" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#fff4ef"/>
+                    <stop offset="1" stop-color="#dfc2bd"/>
+                </linearGradient>
+
+                <linearGradient id="roseGradient" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#f3b6c3"/>
+                    <stop offset="1" stop-color="#cb7189"/>
+                </linearGradient>
+
+                <linearGradient id="leafGradient" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#9dbb87"/>
+                    <stop offset=".5" stop-color="#789879"/>
+                    <stop offset="1" stop-color="#456b4d"/>
+                </linearGradient>
+
+                <!-- ვარდი -->
+                <g id="rose">
+                    <g class="petals">
+                        <ellipse cy="-29" rx="19" ry="34" fill="#d87587"/>
+                        <ellipse cy="-29" rx="19" ry="34" fill="#eda3b0" transform="rotate(45)"/>
+                        <ellipse cy="-29" rx="19" ry="34" fill="#d87587" transform="rotate(90)"/>
+                        <ellipse cy="-29" rx="19" ry="34" fill="#eda3b0" transform="rotate(135)"/>
+                        <ellipse cy="-29" rx="19" ry="34" fill="#d87587" transform="rotate(180)"/>
+                        <ellipse cy="-29" rx="19" ry="34" fill="#eda3b0" transform="rotate(225)"/>
+                        <ellipse cy="-29" rx="19" ry="34" fill="#d87587" transform="rotate(270)"/>
+                        <ellipse cy="-29" rx="19" ry="34" fill="#eda3b0" transform="rotate(315)"/>
+                    </g>
+                    <circle r="18" fill="#c65d76"/>
+                    <path d="M-12 0 Q-7 -17 0 -11 Q10 -18 13 -3 Q8 14 -4 12 Q-15 10 -12 0Z"
+                          fill="#e99aa8"/>
+                </g>
+
+                <!-- მეორე ვარდი -->
+                <g id="rose2">
+                    <g class="petals">
+                        <ellipse cy="-27" rx="17" ry="31" fill="#e7a0a9"/>
+                        <ellipse cy="-27" rx="17" ry="31" fill="#f5c4cb" transform="rotate(45)"/>
+                        <ellipse cy="-27" rx="17" ry="31" fill="#e7a0a9" transform="rotate(90)"/>
+                        <ellipse cy="-27" rx="17" ry="31" fill="#f5c4cb" transform="rotate(135)"/>
+                        <ellipse cy="-27" rx="17" ry="31" fill="#e7a0a9" transform="rotate(180)"/>
+                        <ellipse cy="-27" rx="17" ry="31" fill="#f5c4cb" transform="rotate(225)"/>
+                        <ellipse cy="-27" rx="17" ry="31" fill="#e7a0a9" transform="rotate(270)"/>
+                        <ellipse cy="-27" rx="17" ry="31" fill="#f5c4cb" transform="rotate(315)"/>
+                    </g>
+                    <circle r="15" fill="#bd6177"/>
+                </g>
+
+                <!-- გვირილა -->
+                <g id="daisy">
+                    <g class="petals">
+                        <ellipse cy="-26" rx="11" ry="29" fill="#fff5e9"/>
+                        <ellipse cy="-26" rx="11" ry="29" fill="#fff5e9" transform="rotate(30)"/>
+                        <ellipse cy="-26" rx="11" ry="29" fill="#fff5e9" transform="rotate(60)"/>
+                        <ellipse cy="-26" rx="11" ry="29" fill="#fff5e9" transform="rotate(90)"/>
+                        <ellipse cy="-26" rx="11" ry="29" fill="#fff5e9" transform="rotate(120)"/>
+                        <ellipse cy="-26" rx="11" ry="29" fill="#fff5e9" transform="rotate(150)"/>
+                        <ellipse cy="-26" rx="11" ry="29" fill="#fff5e9" transform="rotate(180)"/>
+                        <ellipse cy="-26" rx="11" ry="29" fill="#fff5e9" transform="rotate(210)"/>
+                        <ellipse cy="-26" rx="11" ry="29" fill="#fff5e9" transform="rotate(240)"/>
+                        <ellipse cy="-26" rx="11" ry="29" fill="#fff5e9" transform="rotate(270)"/>
+                        <ellipse cy="-26" rx="11" ry="29" fill="#fff5e9" transform="rotate(300)"/>
+                        <ellipse cy="-26" rx="11" ry="29" fill="#fff5e9" transform="rotate(330)"/>
+                    </g>
+                    <circle r="15" fill="#e7b34d"/>
+                    <circle r="8" fill="#f3ce73"/>
+                </g>
+
+                <g id="daisy2">
+                    <use href="#daisy" transform="scale(.85)"/>
+                </g>
+            </defs>
+
+            <!-- ღეროები -->
+            <g class="stems">
+                <path d="M400 735 C385 570 390 355 400 232"/>
+                <path d="M400 735 C350 570 325 390 300 301"/>
+                <path d="M400 735 C450 560 475 375 500 289"/>
+                <path d="M400 735 C330 600 245 460 210 391"/>
+                <path d="M400 735 C470 600 555 460 590 391"/>
+                <path d="M400 735 C375 625 340 530 310 480"/>
+                <path d="M400 735 C425 625 460 530 490 480"/>
+                <path d="M400 735 C400 650 400 590 400 550"/>
+            </g>
+
+            <!-- ბუნებრივი ფოთლები -->
+            <g class="leaves">
+
+                <!-- მარცხენა დიდი ფოთლები -->
+                <g class="leaf leaf-left">
+                    <path d="M382 650 C335 620 275 565 245 580 C265 625 330 655 382 650Z"/>
+                    <path d="M382 650 Q315 610 255 584" class="leaf-vein"/>
+                </g>
+
+                <g class="leaf leaf-left">
+                    <path d="M355 570 C305 550 250 490 215 510 C240 555 305 585 355 570Z"/>
+                    <path d="M355 570 Q285 535 225 515" class="leaf-vein"/>
+                </g>
+
+                <g class="leaf leaf-left">
+                    <path d="M345 475 C300 455 255 410 220 425 C240 465 295 490 345 475Z"/>
+                    <path d="M345 475 Q280 450 230 430" class="leaf-vein"/>
+                </g>
+
+                <g class="leaf leaf-left">
+                    <path d="M375 390 C340 360 310 325 285 340 C300 375 340 395 375 390Z"/>
+                    <path d="M375 390 Q325 355 290 345" class="leaf-vein"/>
+                </g>
+
+                <!-- მარჯვენა დიდი ფოთლები -->
+                <g class="leaf leaf-right">
+                    <path d="M418 625 C465 590 525 550 560 570 C540 615 480 645 418 625Z"/>
+                    <path d="M418 625 Q490 590 550 575" class="leaf-vein"/>
+                </g>
+
+                <g class="leaf leaf-right">
+                    <path d="M445 535 C500 500 550 450 585 475 C565 520 500 550 445 535Z"/>
+                    <path d="M445 535 Q520 490 575 480" class="leaf-vein"/>
+                </g>
+
+                <g class="leaf leaf-right">
+                    <path d="M455 440 C500 405 550 355 580 380 C560 420 505 455 455 440Z"/>
+                    <path d="M455 440 Q530 400 570 385" class="leaf-vein"/>
+                </g>
+
+                <g class="leaf leaf-right">
+                    <path d="M430 375 C465 335 500 315 520 335 C505 365 465 390 430 375Z"/>
+                    <path d="M430 375 Q485 340 515 340" class="leaf-vein"/>
+                </g>
+
+                <!-- შუა, წვრილი ფოთლები -->
+                <g class="leaf leaf-small">
+                    <path d="M390 575 C355 535 345 500 365 485 C390 510 405 550 390 575Z"/>
+                    <path d="M390 575 Q365 520 365 492" class="leaf-vein"/>
+                </g>
+
+                <g class="leaf leaf-small">
+                    <path d="M420 495 C445 455 470 435 490 450 C475 480 445 500 420 495Z"/>
+                    <path d="M420 495 Q460 455 485 455" class="leaf-vein"/>
+                </g>
+
+                <!-- ქვედა ფოთლები -->
+                <g class="leaf leaf-small">
+                    <path d="M365 690 C320 670 290 640 300 615 C340 630 370 660 365 690Z"/>
+                    <path d="M365 690 Q320 645 305 620" class="leaf-vein"/>
+                </g>
+
+                <g class="leaf leaf-small">
+                    <path d="M435 685 C480 655 510 625 500 600 C460 625 430 655 435 685Z"/>
+                    <path d="M435 685 Q480 640 495 605" class="leaf-vein"/>
+                </g>
+
+            </g>
+
+            <!-- ყვავილები -->
+            <g class="flower flower-1" transform="translate(400 195)">
+                <use href="#rose"/>
+            </g>
+
+            <g class="flower flower-2" transform="translate(300 265)">
+                <use href="#daisy"/>
+            </g>
+
+            <g class="flower flower-3" transform="translate(500 255)">
+                <use href="#rose2"/>
+            </g>
+
+            <g class="flower flower-4" transform="translate(210 355)">
+                <use href="#daisy2"/>
+            </g>
+
+            <g class="flower flower-5" transform="translate(590 355)">
+                <use href="#daisy"/>
+            </g>
+
+            <g class="flower flower-6" transform="translate(310 445)">
+                <use href="#rose2"/>
+            </g>
+
+            <g class="flower flower-7" transform="translate(490 445)">
+                <use href="#rose"/>
+            </g>
+
+            <g class="flower flower-8" transform="translate(400 520)">
+                <use href="#daisy2"/>
+            </g>
+
+            <!-- ქაღალდის უკანა ნაწილი -->
+            <g class="bouquet-paper-back">
+                <path d="M260 530 Q400 610 540 530 L475 790 Q400 835 325 790Z"
+                      fill="url(#paperGradient)" opacity=".72"/>
+            </g>
+
+            <!-- ქვედა ღეროები -->
+            <g class="stems-bottom">
+                <path d="M400 540 Q390 650 365 765"/>
+                <path d="M400 550 Q400 650 400 775"/>
+                <path d="M400 540 Q410 650 435 765"/>
+            </g>
+
+            <!-- ქაღალდის წინა ნაწილი -->
+            <g class="bouquet-paper-front">
+                <path d="M265 545 Q400 625 535 545 L465 770 Q400 800 335 770Z"
+                      fill="url(#paperGradient)" opacity=".82"/>
+                <path d="M265 545 Q400 625 535 545"
+                      fill="none" stroke="#d8b5b2" stroke-width="3"/>
+            </g>
+
+            <!-- ლენტი -->
+            <g class="bow">
+                <path d="M400 730 C350 675 295 700 325 755 C340 780 375 755 400 730Z"/>
+                <path d="M400 730 C450 675 505 700 475 755 C460 780 425 755 400 730Z"/>
+                <path d="M390 745 Q365 805 345 835"/>
+                <path d="M410 745 Q435 805 455 835"/>
+                <ellipse cx="400" cy="730" rx="18" ry="22"/>
+            </g>
+
+        </svg>
+
+        <div class="bottom-text">
+            პრივეტ ნიიიიიი <span>♥♥♥♥♥</span>
+        </div>
+
+    </div>
+</div>
+
+<!-- აქ ქვემოთ დატოვე შენი საიტის არსებული კონტენტი -->
+
+
+
+
 
   <header class="topbar">
     <a class="logo" href="#">S/01</a>
@@ -1379,6 +1636,21 @@
       });
     }
   </script>
+
+
+
+
+
+
+<!-- პრელოადერ -->
+
+
+
+<script src="js/preloader.js"></script>
+
+
+
+
 
 </body>
 </html>
