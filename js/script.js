@@ -722,7 +722,7 @@ function startCelebration() {
 
   message.innerHTML = `
     <div class="celebration-top">
-      ✧ A LITTLE MOMENT TO CELEBRATE ✧
+      ✧ ვიცოდი, რომ უარს არ იტყოდი 🎀 ✧
     </div>
 
     <div class="celebration-bow">🎀</div>
@@ -1548,3 +1548,4 @@ if (noQuestion) {
 
 // საიტის გახსნისას გამოჩნდეს საწყისი ეკრანი
 showScreen(questionScreen);
+little
