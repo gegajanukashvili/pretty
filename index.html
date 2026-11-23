@@ -1722,10 +1722,22 @@
   </script>
 
 <script>
-  const dateInput = document.getElementById("date");
+
+/* =====================================
+   DATE & TIME PICKER
+===================================== */
+
+const dateInput = document.getElementById("date");
 const timeInput = document.getElementById("time");
 
-document.getElementById("datePickerButton").addEventListener("click", () => {
+const datePickerButton = document.getElementById("datePickerButton");
+const timePickerButton = document.getElementById("timePickerButton");
+
+const selectedDateText = document.getElementById("selectedDate");
+const selectedTimeText = document.getElementById("selectedTime");
+
+// კალენდრის გახსნა
+datePickerButton.addEventListener("click", () => {
     if (dateInput.showPicker) {
         dateInput.showPicker();
     } else {
@@ -1733,7 +1745,8 @@ document.getElementById("datePickerButton").addEventListener("click", () => {
     }
 });
 
-document.getElementById("timePickerButton").addEventListener("click", () => {
+// საათის გახსნა
+timePickerButton.addEventListener("click", () => {
     if (timeInput.showPicker) {
         timeInput.showPicker();
     } else {
@@ -1741,17 +1754,34 @@ document.getElementById("timePickerButton").addEventListener("click", () => {
     }
 });
 
-dateInput.addEventListener("change", () => {
-    document.getElementById("selectedDate").textContent =
-        dateInput.value
-            ? dateInput.value.split("-").reverse().join(".")
-            : "აირჩიე თარიღი";
-});
+// თარიღის განახლება
+function updateSelectedDate() {
+    if (!dateInput.value) {
+        selectedDateText.textContent = "აირჩიე თარიღი";
+        return;
+    }
 
-timeInput.addEventListener("change", () => {
-    document.getElementById("selectedTime").textContent =
+    const [year, month, day] = dateInput.value.split("-");
+
+    selectedDateText.textContent = `${day}.${month}.${year}`;
+}
+
+// დროის განახლება
+function updateSelectedTime() {
+    selectedTimeText.textContent =
         timeInput.value || "აირჩიე დრო";
-});
+}
+
+dateInput.addEventListener("change", updateSelectedDate);
+dateInput.addEventListener("input", updateSelectedDate);
+
+timeInput.addEventListener("change", updateSelectedTime);
+timeInput.addEventListener("input", updateSelectedTime);
+
+// საწყისი მდგომარეობა
+updateSelectedDate();
+updateSelectedTime();
+
 </script>
 
 
