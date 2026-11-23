@@ -22,6 +22,7 @@ const restartButton = document.getElementById("restartButton");
 
 const resultDate = document.getElementById("resultDate");
 const resultTime = document.getElementById("resultTime");
+const resultPlans = document.getElementById("resultPlans");
 
 const planItems = document.querySelectorAll(".plan-item");
 
@@ -1172,6 +1173,20 @@ function addBookingCelebrationStyles() {
 }
 
 
+
+// არჩეული აქტივობების გამოტანა წარმატების ეკრანზე
+if (resultPlans) {
+    resultPlans.innerHTML = "";
+
+    selectedPlans.forEach((plan) => {
+        const item = document.createElement("div");
+
+        item.className = "result-plan-item";
+        item.textContent = `✓ ${plan}`;
+
+        resultPlans.appendChild(item);
+    });
+}
 /* --------------------------------
    BOOKING CELEBRATION
 -------------------------------- */
@@ -1596,3 +1611,5 @@ updateMusicButton();
 if (noQuestion) {
   noQuestion.classList.remove("visible");
 }
+showScreen(successScreen);
+startBookingCelebration();
