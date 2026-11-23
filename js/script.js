@@ -97,16 +97,13 @@ function releaseBookingProtection() {
 }
 
 
-/* --------------------------------
-   BROWSER CLOSE / REFRESH PROTECTION
--------------------------------- */
-
-window.addEventListener("beforeunload", (event) => {
-  if (bookingFlowActive && !bookingCompleted) {
-    event.preventDefault();
-    event.returnValue = "";
-  }
-});
+/*
+   შენიშვნა:
+   beforeunload განზრახ ამოღებულია.
+   ბრაუზერის დახურვის/განახლებისას საკუთარი
+   HTML ალერტის ჩვენება შეუძლებელია.
+   ამიტომ ბრაუზერის სტანდარტული გაფრთხილებაც აღარ გამოჩნდება.
+*/
 
 
 /* --------------------------------
@@ -121,7 +118,6 @@ document.addEventListener("click", (event) => {
 
   if (!link) return;
 
-  // ახალი ჩანართის გახსნის მცდელობას არ ვბლოკავთ
   if (
     event.ctrlKey ||
     event.metaKey ||
@@ -136,7 +132,6 @@ document.addEventListener("click", (event) => {
 
   const url = new URL(link.href, window.location.href);
 
-  // იგივე გვერდზე გადასვლა არ საჭიროებს გაფრთხილებას
   if (url.href === window.location.href) return;
 
   event.preventDefault();
@@ -155,9 +150,11 @@ function showNavigationAlert() {
     {
       confirmText: "დავრჩები! 💗",
       cancelText: "მაინც გავდივარ",
+
       onConfirm: () => {
         pendingNavigationUrl = null;
       },
+
       onCancel: () => {
         const destination = pendingNavigationUrl;
 
@@ -366,11 +363,12 @@ function showCuteValidation(
 
   const actions = overlay.querySelector(".cute-validation-actions");
 
-  const confirmButton = document.createElement("button");
-  confirmButton.className = "cute-validation-button";
-  confirmButton.textContent = options.confirmText || "კარგი, ახლავე! 🎀";
+  const modalConfirmButton = document.createElement("button");
+  modalConfirmButton.className = "cute-validation-button";
+  modalConfirmButton.textContent =
+    options.confirmText || "კარგი, ახლავე! 🎀";
 
-  actions.appendChild(confirmButton);
+  actions.appendChild(modalConfirmButton);
 
   let cancelButton = null;
 
@@ -391,9 +389,8 @@ function showCuteValidation(
     const heart = document.createElement("span");
 
     heart.className = "cute-validation-heart";
-    heart.textContent = decorations[
-      Math.floor(Math.random() * decorations.length)
-    ];
+    heart.textContent =
+      decorations[Math.floor(Math.random() * decorations.length)];
 
     heart.style.left = `${Math.random() * 100}%`;
     heart.style.top = `${55 + Math.random() * 35}%`;
@@ -425,7 +422,7 @@ function showCuteValidation(
     }, 250);
   }
 
-  confirmButton.addEventListener("click", () => {
+  modalConfirmButton.addEventListener("click", () => {
     closeValidation(options.onConfirm);
   });
 
@@ -474,6 +471,33 @@ function getLocalDateString() {
 
 if (dateInput) {
   dateInput.min = getLocalDateString();
+}
+
+
+/* --------------------------------
+   FORMAT DATE IN GEORGIAN
+-------------------------------- */
+
+function formatDateInGeorgian(dateString) {
+  if (!dateString) return "";
+
+  // ვქმნით თარიღს შუადღის დროით, რათა დროის სარტყელმა
+  // კალენდარული დღე შემთხვევით არ შეცვალოს.
+  const selectedDate = new Date(`${dateString}T12:00:00`);
+
+  if (Number.isNaN(selectedDate.getTime())) {
+    return dateString;
+  }
+
+  const formattedDate = new Intl.DateTimeFormat("ka-GE", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(selectedDate);
+
+  return formattedDate.charAt(0).toLocaleUpperCase("ka-GE") +
+    formattedDate.slice(1);
 }
 
 
@@ -1572,10 +1596,10 @@ if (confirmButton) {
         );
       }
 
-      const [year, month, day] = selectedDate.split("-");
-
+      // თარიღი საბოლოო გვერდზე ქართულად:
+      // მაგალითად: ოთხშაბათი, 25 ნოემბერი, 2026
       if (resultDate) {
-        resultDate.textContent = `${day}.${month}.${year}`;
+        resultDate.textContent = formatDateInGeorgian(selectedDate);
       }
 
       if (resultTime) {
@@ -1766,4 +1790,3 @@ if (noQuestion) {
 -------------------------------- */
 
 showScreen(questionScreen);
-დრო
