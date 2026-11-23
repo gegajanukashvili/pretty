@@ -172,7 +172,7 @@ button {
 .small-label {
   color: var(--accent-dark);
   font-family: "DM Mono", monospace;
-  font-size: 11px;
+  font-size: 18px;
   letter-spacing: 1.6px;
   margin-bottom: 24px;
 }
@@ -368,7 +368,7 @@ h1 {
   justify-content: space-between;
   color: #c8adb7;
   font-family: "DM Mono", monospace;
-  font-size: 9px;
+  font-size: 16px;
   letter-spacing: 1px;
 }
 
@@ -677,9 +677,10 @@ h1 {
 }
 
 .celebration-top {
-  color: #bd8299;
+  color: #82445c;
   font-family: "DM Mono", monospace;
-  font-size: 10px;
+  font-size: 15px !important;
+  font-weight: 500;
   letter-spacing: 2px;
   margin-bottom: 18px;
 }
@@ -845,7 +846,7 @@ h1 {
   }
 
   .celebration-top {
-    font-size: 8px;
+    font-size: 15px;
     letter-spacing: 1.2px;
   }
 }
@@ -1522,4 +1523,4 @@ h1 {
         opacity: 1;
         transform: translateY(0);
     }
-}
+}celebration-top
