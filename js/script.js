@@ -23,6 +23,12 @@ const restartButton = document.getElementById("restartButton");
 const resultDate = document.getElementById("resultDate");
 const resultTime = document.getElementById("resultTime");
 
+const planItems = document.querySelectorAll(".plan-item");
+
+const allButton = document.querySelector(
+  '.plan-item[data-plan="ყველა"]'
+);
+
 /* MUSIC ELEMENTS */
 
 const backgroundMusic = document.getElementById("backgroundMusic");
@@ -35,25 +41,201 @@ const musicText = document.getElementById("musicText");
    VARIABLES
 -------------------------------- */
 
-let questionCount = 0;
+let validationOverlay = null;
+
 let isRunaway = false;
 let isMoving = false;
-let questionTimer = null;
+let noButtonInitialized = false;
+
+let moveTimer = null;
+let lastEscapeTime = 0;
+
 let previousPositions = [];
 
 let musicEnabled = true;
 let bookingAnimationRunning = false;
 let bookingRequestRunning = false;
 
-const questions = [
-  "Are you sure?",
-  "Really sure?"
-];
-
 const escapeDistance = 85;
+const escapeCooldown = 250;
 
-// Production PHP API
 const BOOKING_API = "https://cnk.ge/api/setup.php?action=book";
+
+
+/* --------------------------------
+   CUTE VALIDATION ANIMATION
+-------------------------------- */
+
+function showCuteValidation(message, emoji = "🐰") {
+  if (validationOverlay) validationOverlay.remove();
+
+  if (!document.getElementById("cuteValidationStyles")) {
+    const style = document.createElement("style");
+    style.id = "cuteValidationStyles";
+
+    style.textContent = `
+      .cute-validation-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 20000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(65, 35, 48, .4);
+        backdrop-filter: blur(7px);
+        animation: cuteFadeIn .3s ease both;
+      }
+
+      .cute-validation-card {
+        width: min(100%, 370px);
+        padding: 35px 25px 30px;
+        border-radius: 28px;
+        background: #fff8fb;
+        box-shadow: 0 20px 60px rgba(120, 60, 85, .2);
+        text-align: center;
+        border: 1px solid #f8dce7;
+        animation: cutePop .55s cubic-bezier(.2,1.5,.5,1) both;
+      }
+
+      .cute-validation-emoji {
+        font-size: 75px;
+        display: inline-block;
+        animation: cuteWiggle 1s ease-in-out infinite;
+      }
+
+      .cute-validation-title {
+        margin: 18px 0 10px;
+        color: #ce7899;
+        font-family: "Playfair Display", serif;
+        font-size: 25px;
+      }
+
+      .cute-validation-message {
+        color: #8f6878;
+        font-family: "DM Sans", sans-serif;
+        font-size: 15px;
+        line-height: 1.7;
+        margin: 0 0 22px;
+      }
+
+      .cute-validation-button {
+        border: none;
+        border-radius: 30px;
+        padding: 12px 32px;
+        background: #e99ab6;
+        color: white;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform .2s, background .2s;
+      }
+
+      .cute-validation-button:hover {
+        background: #d982a3;
+        transform: translateY(-2px);
+      }
+
+      .cute-validation-heart {
+        position: absolute;
+        pointer-events: none;
+        animation: cuteHeart 2s ease-out forwards;
+      }
+
+      @keyframes cuteFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @keyframes cutePop {
+        from { opacity: 0; transform: scale(.6) translateY(30px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+      }
+
+      @keyframes cuteWiggle {
+        0%, 100% { transform: rotate(-8deg); }
+        50% { transform: rotate(8deg) translateY(-7px); }
+      }
+
+      @keyframes cuteHeart {
+        0% {
+          opacity: 0;
+          transform: translateY(0) scale(.5);
+        }
+        20% { opacity: 1; }
+        100% {
+          opacity: 0;
+          transform: translateY(-130px) scale(1.4) rotate(25deg);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .cute-validation-overlay *,
+        .cute-validation-overlay {
+          animation-duration: .01ms !important;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  const overlay = document.createElement("div");
+  overlay.className = "cute-validation-overlay";
+
+  overlay.innerHTML = `
+    <div class="cute-validation-card">
+      <div class="cute-validation-emoji">${emoji}</div>
+      <h2 class="cute-validation-title">მოიცა, მოიცა! 💗</h2>
+      <p class="cute-validation-message"></p>
+      <button class="cute-validation-button">კარგი, ახლავე! 🎀</button>
+    </div>
+  `;
+
+  overlay.querySelector(".cute-validation-message").textContent = message;
+
+  document.body.appendChild(overlay);
+  validationOverlay = overlay;
+
+  const decorations = ["💗", "💕", "✨", "🎀", "♡"];
+
+  for (let i = 0; i < 14; i++) {
+    const heart = document.createElement("span");
+
+    heart.className = "cute-validation-heart";
+    heart.textContent = decorations[
+      Math.floor(Math.random() * decorations.length)
+    ];
+
+    heart.style.left = `${Math.random() * 100}%`;
+    heart.style.top = `${55 + Math.random() * 35}%`;
+    heart.style.fontSize = `${15 + Math.random() * 15}px`;
+    heart.style.animationDelay = `${Math.random() * .8}s`;
+
+    overlay.appendChild(heart);
+  }
+
+  function closeValidation() {
+    if (!overlay.isConnected) return;
+
+    overlay.style.animation = "cuteFadeIn .25s ease reverse both";
+
+    setTimeout(() => {
+      overlay.remove();
+
+      if (validationOverlay === overlay) {
+        validationOverlay = null;
+      }
+    }, 250);
+  }
+
+  overlay.querySelector(".cute-validation-button")
+    .addEventListener("click", closeValidation);
+
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) closeValidation();
+  });
+}
 
 
 /* --------------------------------
@@ -106,47 +288,187 @@ function updateHint(message) {
 
 
 /* --------------------------------
-   NO QUESTION
+   NO BUTTON STYLES
 -------------------------------- */
 
-function showNoQuestion() {
-  if (questionCount >= 2) {
-    isRunaway = true;
+function addNoButtonStyles() {
+  if (document.getElementById("noButtonDynamicStyles")) return;
 
-    noQuestion.classList.remove("visible");
+  const style = document.createElement("style");
+  style.id = "noButtonDynamicStyles";
 
-    noButton.style.display = "";
-    noButton.classList.remove("moving");
+  style.textContent = `
+    #buttonStage {
+      position: relative;
+    }
 
-    noButton.style.left = "";
-    noButton.style.top = "";
+    /* კითხვების ელემენტი აღარ გამოჩნდება */
+    #noQuestion {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
 
-    previousPositions = [];
+    #noButton.moving {
+      position: absolute;
+      z-index: 10;
+      margin: 0;
+      transition:
+        left .22s cubic-bezier(.2,.8,.3,1),
+        top .22s cubic-bezier(.2,.8,.3,1);
+      will-change: left, top;
+    }
+  `;
 
-    updateHint("დააჭირე კის, სადამდე უნდა ზდიო.");
+  document.head.appendChild(style);
+}
 
-    return;
+addNoButtonStyles();
+
+
+/* --------------------------------
+   NO BUTTON POSITION HELPERS
+-------------------------------- */
+
+function getStagePosition(element) {
+  const stageRect = stage.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
+
+  return {
+    x: elementRect.left - stageRect.left - stage.clientLeft + stage.scrollLeft,
+    y: elementRect.top - stageRect.top - stage.clientTop + stage.scrollTop
+  };
+}
+
+
+/* --------------------------------
+   INITIALIZE NO BUTTON
+-------------------------------- */
+
+function initializeNoButton() {
+  if (!stage || !noButton || noButtonInitialized) return;
+
+  const position = getStagePosition(noButton);
+
+  noButton.style.transition = "none";
+
+  noButton.classList.add("moving");
+
+  noButton.style.left = `${position.x}px`;
+  noButton.style.top = `${position.y}px`;
+
+  noButtonInitialized = true;
+
+  requestAnimationFrame(() => {
+    noButton.style.transition = "";
+  });
+}
+
+
+/* --------------------------------
+   GET NEW NO BUTTON POSITION
+-------------------------------- */
+
+function getNewButtonPosition(pointerX, pointerY) {
+  const stageWidth = stage.clientWidth;
+  const stageHeight = stage.clientHeight;
+
+  const buttonWidth = noButton.offsetWidth;
+  const buttonHeight = noButton.offsetHeight;
+
+  const padding = 12;
+
+  const maxX = Math.max(
+    padding,
+    stageWidth - buttonWidth - padding
+  );
+
+  const maxY = Math.max(
+    padding,
+    stageHeight - buttonHeight - padding
+  );
+
+  const current = getStagePosition(noButton);
+
+  const candidates = [];
+
+  const yesRect = yesButton
+    ? yesButton.getBoundingClientRect()
+    : null;
+
+  const stageRect = stage.getBoundingClientRect();
+
+  let yesX = 0;
+  let yesY = 0;
+
+  if (yesRect) {
+    yesX = yesRect.left - stageRect.left - stage.clientLeft;
+    yesY = yesRect.top - stageRect.top - stage.clientTop;
   }
 
-  const question = questions[questionCount];
+  for (let i = 0; i < 120; i++) {
+    const x = padding + Math.random() * Math.max(0, maxX - padding);
+    const y = padding + Math.random() * Math.max(0, maxY - padding);
 
-  questionCount++;
+    const distanceFromCurrent = Math.hypot(
+      x - current.x,
+      y - current.y
+    );
 
-  noButton.style.display = "none";
+    if (distanceFromCurrent < 75) continue;
 
-  noQuestion.textContent = question;
-  noQuestion.classList.remove("visible");
+    // YES ღილაკს არ უნდა დაემთხვეს
+    if (yesRect) {
+      const overlapsYes =
+        x < yesX + yesRect.width + 15 &&
+        x + buttonWidth > yesX - 15 &&
+        y < yesY + yesRect.height + 15 &&
+        y + buttonHeight > yesY - 15;
 
-  void noQuestion.offsetWidth;
+      if (overlapsYes) continue;
+    }
 
-  noQuestion.classList.add("visible");
+    // მაუსისგან რაც უფრო შორსაა, მით უკეთესი
+    const distanceFromPointer = Math.hypot(
+      x + buttonWidth / 2 - pointerX,
+      y + buttonHeight / 2 - pointerY
+    );
 
-  clearTimeout(questionTimer);
+    // ძველი პოზიციებისგან დაშორება
+    const historyDistance = previousPositions.length
+      ? Math.min(
+          ...previousPositions.map(position =>
+            Math.hypot(
+              x - position.x,
+              y - position.y
+            )
+          )
+        )
+      : 100;
 
-  questionTimer = setTimeout(() => {
-    noQuestion.classList.remove("visible");
-    noButton.style.display = "";
-  }, 1400);
+    const score =
+      distanceFromPointer +
+      distanceFromCurrent * 0.5 +
+      historyDistance * 0.25;
+
+    candidates.push({
+      x,
+      y,
+      score
+    });
+  }
+
+  candidates.sort((a, b) => b.score - a.score);
+
+  if (candidates.length) {
+    return candidates[0];
+  }
+
+  return {
+    x: maxX,
+    y: maxY
+  };
 }
 
 
@@ -154,99 +476,60 @@ function showNoQuestion() {
    NO BUTTON MOVEMENT
 -------------------------------- */
 
-function moveNoButton() {
-  if (!isRunaway || isMoving || !stage || !noButton) return;
+function moveNoButton(pointerX, pointerY) {
+  if (!stage || !noButton || isMoving) return;
+
+  const now = Date.now();
+
+  if (now - lastEscapeTime < escapeCooldown) return;
+
+  lastEscapeTime = now;
 
   isMoving = true;
+  isRunaway = true;
 
-  const padding = 18;
+  initializeNoButton();
 
-  const buttonWidth = noButton.offsetWidth;
-  const buttonHeight = noButton.offsetHeight;
+  const oldPosition = getStagePosition(noButton);
 
-  const stageRect = stage.getBoundingClientRect();
-  const currentRect = noButton.getBoundingClientRect();
-
-  // Stage-ის რეალური საზღვრები
-
-  const minX = padding;
-  const minY = padding;
-
-  const maxX = Math.max(
-    minX,
-    stageRect.width - buttonWidth - padding
-  );
-
-  const maxY = Math.max(
-    minY,
-    stageRect.height - buttonHeight - padding
-  );
-
-  // მიმდინარე პოზიცია Stage-ის მიმართ
-
-  const currentX = currentRect.left - stageRect.left;
-  const currentY = currentRect.top - stageRect.top;
-
-  const moveDistance = 120;
-  const candidates = [];
-
-  for (let i = 0; i < 100; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const distance = 45 + Math.random() * moveDistance;
-
-    let x = currentX + Math.cos(angle) * distance;
-    let y = currentY + Math.sin(angle) * distance;
-
-    x = Math.max(minX, Math.min(maxX, x));
-    y = Math.max(minY, Math.min(maxY, y));
-
-    const currentDistance = Math.hypot(
-      x - currentX,
-      y - currentY
-    );
-
-    const historyDistance = previousPositions.length
-      ? Math.min(
-          ...previousPositions.map(position =>
-            Math.hypot(x - position.x, y - position.y)
-          )
-        )
-      : 100;
-
-    const score = Math.min(
-      currentDistance,
-      historyDistance * 0.7
-    );
-
-    candidates.push({ x, y, score });
-  }
-
-  candidates.sort((a, b) => b.score - a.score);
-
-  const best = candidates[0];
-
-  if (!best) {
-    isMoving = false;
-    return;
-  }
+  // ძველი პოზიცია ვინახება, მაგრამ კითხვა აღარ ჩნდება
+  const best = getNewButtonPosition(pointerX, pointerY);
 
   previousPositions.push({
     x: best.x,
     y: best.y
   });
 
-  if (previousPositions.length > 5) {
+  if (previousPositions.length > 6) {
     previousPositions.shift();
   }
-
-  noButton.classList.add("moving");
 
   noButton.style.left = `${best.x}px`;
   noButton.style.top = `${best.y}px`;
 
-  setTimeout(() => {
+  clearTimeout(moveTimer);
+
+  moveTimer = setTimeout(() => {
     isMoving = false;
-  }, 550);
+  }, 250);
+}
+
+
+/* --------------------------------
+   NO BUTTON ENCOUNTER
+-------------------------------- */
+
+function handleNoEncounter(pointerX, pointerY) {
+  if (!stage || !noButton || isMoving) return;
+
+  isRunaway = true;
+
+  // კითხვების ელემენტი ყოველთვის დამალული რჩება
+  if (noQuestion) {
+    noQuestion.classList.remove("visible");
+  }
+
+  moveNoButton(pointerX, pointerY);
 }
 
 
@@ -255,8 +538,9 @@ function moveNoButton() {
 -------------------------------- */
 
 if (stage && noButton) {
-  stage.addEventListener("mousemove", (event) => {
-    if (!isRunaway || isMoving) return;
+  stage.addEventListener("pointermove", (event) => {
+    if (event.pointerType === "touch") return;
+    if (isMoving) return;
 
     const rect = noButton.getBoundingClientRect();
 
@@ -278,54 +562,48 @@ if (stage && noButton) {
       mouseY - closestY
     );
 
-    if (distance < escapeDistance) {
-      moveNoButton();
-    }
-  });
-}
+    if (distance <= escapeDistance) {
+      const stageRect = stage.getBoundingClientRect();
 
+      const pointerX =
+        event.clientX - stageRect.left - stage.clientLeft;
 
-/* --------------------------------
-   NO BUTTON EVENTS
--------------------------------- */
+      const pointerY =
+        event.clientY - stageRect.top - stage.clientTop;
 
-if (noButton) {
-  noButton.addEventListener("mouseenter", () => {
-    if (isRunaway) {
-      moveNoButton();
-    } else {
-      showNoQuestion();
+      handleNoEncounter(pointerX, pointerY);
     }
   });
 
+  // მობილურისთვის
+  noButton.addEventListener("pointerdown", (event) => {
+    if (event.pointerType !== "touch") return;
 
-  /* --------------------------------
-     MOBILE TOUCH
-  -------------------------------- */
-
-  noButton.addEventListener("touchstart", (event) => {
     event.preventDefault();
 
-    if (isRunaway) {
-      moveNoButton();
-    } else {
-      showNoQuestion();
-    }
-  }, { passive: false });
+    const stageRect = stage.getBoundingClientRect();
 
+    const pointerX =
+      event.clientX - stageRect.left - stage.clientLeft;
 
-  /* --------------------------------
-     NO BUTTON CLICK
-  -------------------------------- */
+    const pointerY =
+      event.clientY - stageRect.top - stage.clientTop;
 
+    handleNoEncounter(pointerX, pointerY);
+  });
+
+  // კლავიატურით გააქტიურების მხარდაჭერა
   noButton.addEventListener("click", (event) => {
     event.preventDefault();
 
-    if (isRunaway) {
-      moveNoButton();
-    } else {
-      showNoQuestion();
-    }
+    if (event.detail !== 0) return;
+
+    const position = getStagePosition(noButton);
+
+    handleNoEncounter(
+      position.x + noButton.offsetWidth / 2,
+      position.y + noButton.offsetHeight / 2
+    );
   });
 }
 
@@ -363,7 +641,6 @@ function startBackgroundMusic() {
     console.log("Background music playback error:", error);
   });
 }
-
 
 function stopBackgroundMusic() {
   if (!backgroundMusic) return;
@@ -436,8 +713,6 @@ function startCelebration() {
     "#ffffff"
   ];
 
-  // Falling confetti
-
   for (let i = 0; i < 65; i++) {
     const piece = document.createElement("span");
 
@@ -459,8 +734,6 @@ function startCelebration() {
 
     celebration.appendChild(piece);
   }
-
-  // Floating decorations
 
   for (let i = 0; i < 18; i++) {
     const decoration = document.createElement("span");
@@ -485,8 +758,6 @@ function startCelebration() {
     celebration.appendChild(decoration);
   }
 
-  // Sparkles
-
   for (let i = 0; i < 35; i++) {
     const sparkle = document.createElement("span");
 
@@ -500,8 +771,6 @@ function startCelebration() {
 
     celebration.appendChild(sparkle);
   }
-
-  // Main message
 
   const message = document.createElement("div");
 
@@ -598,8 +867,6 @@ function addBookingCelebrationStyles() {
       background: linear-gradient(135deg,#f4bfd0,#e79ab5);
       clip-path: polygon(0 100%, 50% 48%, 100% 100%);
     }
-
-    /* GIRL BUNNY */
 
     .girl-bunny {
       position: absolute;
@@ -717,8 +984,6 @@ function addBookingCelebrationStyles() {
       border-radius: 50%;
     }
 
-    /* PINK BOW */
-
     .bunny-bow {
       position: absolute;
       z-index: 5;
@@ -763,8 +1028,6 @@ function addBookingCelebrationStyles() {
       background: #d96f98;
     }
 
-    /* WAVING PAW */
-
     .bunny-arm {
       position: absolute;
       z-index: 9;
@@ -777,18 +1040,6 @@ function addBookingCelebrationStyles() {
       border-radius: 50%;
       transform-origin: 12px 12px;
       transform: rotate(-35deg);
-    }
-
-    .bunny-arm::after {
-      content: "";
-      position: absolute;
-      top: -8px;
-      right: -2px;
-      width: 17px;
-      height: 17px;
-      border-radius: 50%;
-      background: #fffafc;
-      border: 2px solid #f0dce4;
     }
 
     .girl-bunny.waving .bunny-arm {
@@ -983,8 +1234,6 @@ function startBookingCelebration() {
 
   document.body.appendChild(overlay);
 
-  // Floating hearts
-
   const decorations = [
     "💗", "💕", "♡", "💖", "🎀", "✨"
   ];
@@ -1020,8 +1269,6 @@ function startBookingCelebration() {
     overlay.appendChild(item);
   }
 
-  // Sparkles
-
   for (let i = 0; i < 22; i++) {
     const sparkle = document.createElement("span");
 
@@ -1035,8 +1282,6 @@ function startBookingCelebration() {
 
     overlay.appendChild(sparkle);
   }
-
-  // Finish animation
 
   setTimeout(() => {
     overlay.classList.add("booking-exit");
@@ -1056,8 +1301,6 @@ function startBookingCelebration() {
 
 if (yesButton) {
   yesButton.addEventListener("click", () => {
-    clearTimeout(questionTimer);
-
     yesButton.disabled = true;
 
     playCelebrationSound();
@@ -1089,25 +1332,26 @@ if (backButton) {
    CONFIRM DATE & TIME + DATABASE
 -------------------------------- */
 
-
-/* --------------------------------
-   CONFIRM DATE & TIME + DATABASE
--------------------------------- */
-
 if (confirmButton) {
   confirmButton.addEventListener("click", async () => {
     if (bookingAnimationRunning || bookingRequestRunning) return;
 
-    const selectedDate = dateInput.value;
-    const selectedTime = timeInput.value;
+    const selectedDate = dateInput?.value;
+    const selectedTime = timeInput?.value;
 
-    if (!selectedDate || !selectedTime) {
-      alert("გთხოვ, აირჩიე თარიღი და დრო.");
+    if (!selectedDate) {
+      showCuteValidation(
+        "თარიღი ჯერ არ აგირჩევია! კალენდარი ტყუილად ხომ არ დევს აქ? 🥺",
+        "📅"
+      );
       return;
     }
 
-    if (selectedDate < getLocalDateString()) {
-      alert("გთხოვ, აირჩიე დღევანდელი ან მომავალი თარიღი.");
+    if (!selectedTime) {
+      showCuteValidation(
+        "დრო არ აგირჩევია! ბაჭია ვერ გამოიცნობს, როდის უნდა მოვიდეს. 🐰",
+        "⏰"
+      );
       return;
     }
 
@@ -1118,7 +1362,10 @@ if (confirmButton) {
       .filter(plan => plan && plan !== "ყველა");
 
     if (!selectedPlans.length) {
-      alert("გთხოვ, აირჩიე მინიმუმ ერთი აქტივობა.");
+      showCuteValidation(
+        "აქტივობა მაინც უნდა აირჩიო! აბა სად მივდივართ, საიდუმლო მისიაა? 😂💕",
+        "🐰"
+      );
       return;
     }
 
@@ -1166,21 +1413,25 @@ if (confirmButton) {
 
       const dateObject = new Date(`${selectedDate}T12:00:00`);
 
-      resultDate.textContent = dateObject.toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric"
-      });
+      if (resultDate) {
+        resultDate.textContent = dateObject.toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        });
+      }
 
-      const [hours, minutes] = selectedTime.split(":");
+      if (resultTime) {
+        const [hours, minutes] = selectedTime.split(":");
 
-      resultTime.textContent = new Date(
-        2000, 0, 1, Number(hours), Number(minutes)
-      ).toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit"
-      });
+        resultTime.textContent = new Date(
+          2000, 0, 1, Number(hours), Number(minutes)
+        ).toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit"
+        });
+      }
 
       showScreen(successScreen);
       startBookingCelebration();
@@ -1202,7 +1453,6 @@ if (confirmButton) {
 }
 
 
-
 /* --------------------------------
    RESTART
 -------------------------------- */
@@ -1213,24 +1463,37 @@ if (restartButton) {
 
     stopBackgroundMusic();
 
-    dateInput.value = "";
-    timeInput.value = "";
+    if (dateInput) dateInput.value = "";
+    if (timeInput) timeInput.value = "";
 
-    questionCount = 0;
     isRunaway = false;
     isMoving = false;
+    noButtonInitialized = false;
+
+    lastEscapeTime = 0;
 
     previousPositions = [];
 
-    clearTimeout(questionTimer);
+    clearTimeout(moveTimer);
 
-    noQuestion.classList.remove("visible");
+    if (noQuestion) {
+      noQuestion.classList.remove("visible");
+      noQuestion.style.left = "";
+      noQuestion.style.top = "";
+      noQuestion.textContent = "";
+    }
 
-    noButton.style.display = "";
-    noButton.classList.remove("moving");
+    if (noButton) {
+      noButton.style.display = "";
+      noButton.classList.remove("moving");
 
-    noButton.style.left = "";
-    noButton.style.top = "";
+      noButton.style.position = "";
+      noButton.style.left = "";
+      noButton.style.top = "";
+      noButton.style.transition = "";
+
+      noButton.textContent = "No";
+    }
 
     // აქტივობების განულება
 
@@ -1261,12 +1524,6 @@ if (restartButton) {
    ACTIVITY SELECTION
 -------------------------------- */
 
-const planItems = document.querySelectorAll(".plan-item");
-
-const allButton = document.querySelector(
-  '.plan-item[data-plan="ყველა"]'
-);
-
 planItems.forEach((item) => {
   item.addEventListener("click", () => {
 
@@ -1295,8 +1552,6 @@ planItems.forEach((item) => {
         item.classList.contains("selected") ? "true" : "false"
       );
 
-      // შევამოწმოთ ყველა აქტივობა მონიშნულია თუ არა
-
       const regularItems = [...planItems].filter(
         plan => plan !== allButton
       );
@@ -1315,8 +1570,6 @@ planItems.forEach((item) => {
         );
       }
     }
-
-    // არჩეული აქტივობების რაოდენობა
 
     const selectedCount = [...planItems].filter(
       plan => plan !== allButton && plan.classList.contains("selected")
@@ -1338,3 +1591,8 @@ planItems.forEach((item) => {
 -------------------------------- */
 
 updateMusicButton();
+
+// კითხვების ელემენტი თავიდანვე დამალული იყოს
+if (noQuestion) {
+  noQuestion.classList.remove("visible");
+}
