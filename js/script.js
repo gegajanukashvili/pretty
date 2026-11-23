@@ -57,6 +57,12 @@ let musicEnabled = true;
 let bookingAnimationRunning = false;
 let bookingRequestRunning = false;
 
+let bookingFlowActive = false;
+let bookingCompleted = false;
+let historyProtectionActive = false;
+
+let pendingNavigationUrl = null;
+
 const escapeDistance = 85;
 const escapeCooldown = 250;
 
@@ -64,11 +70,142 @@ const BOOKING_API = "https://cnk.ge/api/setup.php?action=book";
 
 
 /* --------------------------------
+   BOOKING EXIT PROTECTION
+-------------------------------- */
+
+function activateBookingProtection() {
+  bookingFlowActive = true;
+  bookingCompleted = false;
+
+  if (!historyProtectionActive) {
+    history.pushState(
+      { bookingProtection: true },
+      "",
+      window.location.href
+    );
+
+    historyProtectionActive = true;
+  }
+}
+
+
+function releaseBookingProtection() {
+  bookingCompleted = true;
+  bookingFlowActive = false;
+  historyProtectionActive = false;
+  pendingNavigationUrl = null;
+}
+
+
+/* --------------------------------
+   BROWSER CLOSE / REFRESH PROTECTION
+-------------------------------- */
+
+window.addEventListener("beforeunload", (event) => {
+  if (bookingFlowActive && !bookingCompleted) {
+    event.preventDefault();
+    event.returnValue = "";
+  }
+});
+
+
+/* --------------------------------
+   CUSTOM NAVIGATION PROTECTION
+-------------------------------- */
+
+document.addEventListener("click", (event) => {
+  if (!bookingFlowActive || bookingCompleted) return;
+  if (bookingRequestRunning) return;
+
+  const link = event.target.closest("a[href]");
+
+  if (!link) return;
+
+  // ახალი ჩანართის გახსნის მცდელობას არ ვბლოკავთ
+  if (
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    event.altKey ||
+    event.button !== 0 ||
+    link.target === "_blank" ||
+    link.hasAttribute("download")
+  ) {
+    return;
+  }
+
+  const url = new URL(link.href, window.location.href);
+
+  // იგივე გვერდზე გადასვლა არ საჭიროებს გაფრთხილებას
+  if (url.href === window.location.href) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  pendingNavigationUrl = url.href;
+
+  showNavigationAlert();
+}, true);
+
+
+function showNavigationAlert() {
+  showCuteValidation(
+    "ეეე, სად გარბიხარ? 😂 ჯერ ჩვენი პაემნის გეგმა უნდა დაასრულო! ბაჭია უკვე გელოდება. 🐰💕",
+    "🎀",
+    {
+      confirmText: "დავრჩები! 💗",
+      cancelText: "მაინც გავდივარ",
+      onConfirm: () => {
+        pendingNavigationUrl = null;
+      },
+      onCancel: () => {
+        const destination = pendingNavigationUrl;
+
+        if (!destination) return;
+
+        releaseBookingProtection();
+
+        window.location.href = destination;
+      }
+    }
+  );
+}
+
+
+/* --------------------------------
+   BROWSER BACK BUTTON PROTECTION
+-------------------------------- */
+
+window.addEventListener("popstate", () => {
+  if (!bookingFlowActive || bookingCompleted) return;
+
+  history.pushState(
+    { bookingProtection: true },
+    "",
+    window.location.href
+  );
+
+  historyProtectionActive = true;
+
+  showScreen(detailsScreen);
+
+  showNavigationAlert();
+});
+
+
+/* --------------------------------
    CUTE VALIDATION ANIMATION
 -------------------------------- */
 
-function showCuteValidation(message, emoji = "🐰") {
-  if (validationOverlay) validationOverlay.remove();
+function showCuteValidation(
+  message,
+  emoji = "🐰",
+  options = {}
+) {
+  if (validationOverlay) {
+    validationOverlay.remove();
+    validationOverlay = null;
+  }
 
   if (!document.getElementById("cuteValidationStyles")) {
     const style = document.createElement("style");
@@ -120,13 +257,20 @@ function showCuteValidation(message, emoji = "🐰") {
         margin: 0 0 22px;
       }
 
+      .cute-validation-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+
       .cute-validation-button {
         border: none;
         border-radius: 30px;
-        padding: 12px 32px;
+        padding: 12px 25px;
         background: #e99ab6;
         color: white;
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 600;
         cursor: pointer;
         transition: transform .2s, background .2s;
@@ -135,6 +279,14 @@ function showCuteValidation(message, emoji = "🐰") {
       .cute-validation-button:hover {
         background: #d982a3;
         transform: translateY(-2px);
+      }
+
+      .cute-validation-button.secondary {
+        background: #b98ca0;
+      }
+
+      .cute-validation-button.secondary:hover {
+        background: #a7788e;
       }
 
       .cute-validation-heart {
@@ -149,8 +301,14 @@ function showCuteValidation(message, emoji = "🐰") {
       }
 
       @keyframes cutePop {
-        from { opacity: 0; transform: scale(.6) translateY(30px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
+        from {
+          opacity: 0;
+          transform: scale(.6) translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
       }
 
       @keyframes cuteWiggle {
@@ -170,6 +328,16 @@ function showCuteValidation(message, emoji = "🐰") {
         }
       }
 
+      @media (max-width: 420px) {
+        .cute-validation-actions {
+          flex-direction: column;
+        }
+
+        .cute-validation-button {
+          width: 100%;
+        }
+      }
+
       @media (prefers-reduced-motion: reduce) {
         .cute-validation-overlay *,
         .cute-validation-overlay {
@@ -186,14 +354,33 @@ function showCuteValidation(message, emoji = "🐰") {
 
   overlay.innerHTML = `
     <div class="cute-validation-card">
-      <div class="cute-validation-emoji">${emoji}</div>
-      <h2 class="cute-validation-title">მოიცა, მოიცა! 💗</h2>
+      <div class="cute-validation-emoji"></div>
+      <h2 class="cute-validation-title">კაი ხარ, მარა ჩქარი ხარ! 💗</h2>
       <p class="cute-validation-message"></p>
-      <button class="cute-validation-button">კარგი, ახლავე! 🎀</button>
+      <div class="cute-validation-actions"></div>
     </div>
   `;
 
+  overlay.querySelector(".cute-validation-emoji").textContent = emoji;
   overlay.querySelector(".cute-validation-message").textContent = message;
+
+  const actions = overlay.querySelector(".cute-validation-actions");
+
+  const confirmButton = document.createElement("button");
+  confirmButton.className = "cute-validation-button";
+  confirmButton.textContent = options.confirmText || "კარგი, ახლავე! 🎀";
+
+  actions.appendChild(confirmButton);
+
+  let cancelButton = null;
+
+  if (options.cancelText) {
+    cancelButton = document.createElement("button");
+    cancelButton.className = "cute-validation-button secondary";
+    cancelButton.textContent = options.cancelText;
+
+    actions.appendChild(cancelButton);
+  }
 
   document.body.appendChild(overlay);
   validationOverlay = overlay;
@@ -216,8 +403,12 @@ function showCuteValidation(message, emoji = "🐰") {
     overlay.appendChild(heart);
   }
 
-  function closeValidation() {
-    if (!overlay.isConnected) return;
+  let closing = false;
+
+  function closeValidation(callback) {
+    if (closing || !overlay.isConnected) return;
+
+    closing = true;
 
     overlay.style.animation = "cuteFadeIn .25s ease reverse both";
 
@@ -227,14 +418,27 @@ function showCuteValidation(message, emoji = "🐰") {
       if (validationOverlay === overlay) {
         validationOverlay = null;
       }
+
+      if (typeof callback === "function") {
+        callback();
+      }
     }, 250);
   }
 
-  overlay.querySelector(".cute-validation-button")
-    .addEventListener("click", closeValidation);
+  confirmButton.addEventListener("click", () => {
+    closeValidation(options.onConfirm);
+  });
+
+  if (cancelButton) {
+    cancelButton.addEventListener("click", () => {
+      closeValidation(options.onCancel);
+    });
+  }
 
   overlay.addEventListener("click", (event) => {
-    if (event.target === overlay) closeValidation();
+    if (event.target === overlay) {
+      closeValidation(options.onConfirm);
+    }
   });
 }
 
@@ -1228,7 +1432,11 @@ function startBookingCelebration() {
 
 if (yesButton) {
   yesButton.addEventListener("click", () => {
+    if (bookingFlowActive || bookingCompleted) return;
+
     yesButton.disabled = true;
+
+    activateBookingProtection();
 
     playCelebrationSound();
     startCelebration();
@@ -1247,7 +1455,10 @@ if (yesButton) {
 
 if (backButton) {
   backButton.addEventListener("click", () => {
-    if (bookingRequestRunning) return;
+    if (bookingFlowActive || bookingRequestRunning) {
+      showNavigationAlert();
+      return;
+    }
 
     stopBackgroundMusic();
     showScreen(questionScreen);
@@ -1299,7 +1510,7 @@ if (confirmButton) {
 
     if (!selectedTime) {
       showCuteValidation(
-        "დრო არ აგირჩევია! ბაჭია ვერ გამოიცნობს, როდის უნდა მოვიდეს. 🐰",
+        "დრო არ აგირჩევია! დრო მხოლოდ სიყვარულს დაინდოოობს. 🐰",
         "⏰"
       );
       return;
@@ -1313,7 +1524,7 @@ if (confirmButton) {
 
     if (!selectedPlans.length) {
       showCuteValidation(
-        "აქტივობა მაინც უნდა აირჩიო! აბა სად მივდივართ, საიდუმლო მისიაა? 😂💕",
+        "აქტივობა მაინც უნდა აირჩიო! რაიყო, კიარ შეგჭამ? 😂💕",
         "🐰"
       );
       return;
@@ -1361,40 +1572,30 @@ if (confirmButton) {
         );
       }
 
-      const dateObject = new Date(`${selectedDate}T12:00:00`);
+      const [year, month, day] = selectedDate.split("-");
 
       if (resultDate) {
-        resultDate.textContent = dateObject.toLocaleDateString("en-US", {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-          year: "numeric"
-        });
+        resultDate.textContent = `${day}.${month}.${year}`;
       }
 
       if (resultTime) {
-        const [hours, minutes] = selectedTime.split(":");
-
-        resultTime.textContent = new Date(
-          2000, 0, 1, Number(hours), Number(minutes)
-        ).toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit"
-        });
+        resultTime.textContent = selectedTime;
       }
 
-      // არჩეული აქტივობების გამოტანა წარმატების ეკრანზე
       renderSelectedPlans(selectedPlans);
 
+      releaseBookingProtection();
+
       showScreen(successScreen);
+
       startBookingCelebration();
 
     } catch (error) {
       console.error("Booking error:", error);
 
-      alert(
-        error.message ||
-        "სერვერთან დაკავშირება ვერ მოხერხდა."
+      showCuteValidation(
+        error.message || "სერვერთან დაკავშირება ვერ მოხერხდა.",
+        "🥺"
       );
 
     } finally {
@@ -1447,15 +1648,21 @@ if (restartButton) {
       noButton.textContent = "No";
     }
 
-    // აქტივობების განულება
     planItems.forEach(plan => {
       plan.classList.remove("selected");
       plan.setAttribute("aria-pressed", "false");
     });
 
-    // წარმატების ეკრანის აქტივობების გასუფთავება
     if (resultPlans) {
       resultPlans.innerHTML = "";
+    }
+
+    if (resultDate) {
+      resultDate.textContent = "";
+    }
+
+    if (resultTime) {
+      resultTime.textContent = "";
     }
 
     const selectionHint = document.querySelector(".selection-hint");
@@ -1469,6 +1676,8 @@ if (restartButton) {
 
     updateHint("One of these buttons is behaving strangely.");
 
+    releaseBookingProtection();
+
     showScreen(questionScreen);
   });
 }
@@ -1480,6 +1689,7 @@ if (restartButton) {
 
 planItems.forEach((item) => {
   item.addEventListener("click", () => {
+    if (bookingRequestRunning) return;
 
     if (item === allButton) {
       const shouldSelectAll = !item.classList.contains("selected");
@@ -1541,11 +1751,19 @@ planItems.forEach((item) => {
 
 updateMusicButton();
 
-// კითხვების ელემენტი თავიდანვე დამალული იყოს
+
+/* --------------------------------
+   INITIAL NO QUESTION STATE
+-------------------------------- */
+
 if (noQuestion) {
   noQuestion.classList.remove("visible");
 }
 
-// საიტის გახსნისას გამოჩნდეს საწყისი ეკრანი
+
+/* --------------------------------
+   INITIAL SCREEN
+-------------------------------- */
+
 showScreen(questionScreen);
-little
+დრო
