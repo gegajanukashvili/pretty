@@ -1476,7 +1476,7 @@ function startBookingCelebration() {
       </h2>
 
       <p class="booking-subtitle">
-        Your date is officially booked! 💗
+        ავადა ვარ ავადა, მოდი სანახავადა! 💗
       </p>
 
     </div>
