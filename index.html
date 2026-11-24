@@ -1499,7 +1499,7 @@
     </span>
     <span class="plan-copy">
       <strong>ყველა</strong>
-      <small>ყველაფერი ერთად ♡</small>
+      <small>არ გეჩვენება, ყველაფერი ერთად ♡</small>
     </span>
     <span class="plan-number">07</span>
     <span class="plan-check"></span>
@@ -1546,7 +1546,26 @@
             <input type="time" id="time" required>
         </div>
     </div>
+<div id="dateTimePreview" class="date-time-preview">
 
+    <div class="preview-icon">♡</div>
+
+    <div class="preview-content">
+        <span class="preview-label">OUR DATE</span>
+
+        <div id="previewDate" class="preview-date">
+            თარიღი ჯერ არ აგირჩევია
+        </div>
+
+        <div id="previewTime" class="preview-time">
+            <span>◷</span>
+            დრო ჯერ არ აგირჩევია
+        </div>
+
+        <div id="previewMessage" class="preview-message">
+            აირჩიე დღე და დრო 💗
+        </div>
+    </div>
 </div>
 
 <button class="confirm-button" id="confirmButton">
@@ -1722,66 +1741,76 @@
   </script>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+    const dateInput = document.getElementById("date");
+    const timeInput = document.getElementById("time");
 
-/* =====================================
-   DATE & TIME PICKER
-===================================== */
+    const selectedDate = document.getElementById("selectedDate");
+    const selectedTime = document.getElementById("selectedTime");
 
-const dateInput = document.getElementById("date");
-const timeInput = document.getElementById("time");
+    const previewDate = document.getElementById("previewDate");
+    const previewTime = document.getElementById("previewTime");
 
-const datePickerButton = document.getElementById("datePickerButton");
-const timePickerButton = document.getElementById("timePickerButton");
+    const dateButton = document.getElementById("datePickerButton");
+    const timeButton = document.getElementById("timePickerButton");
 
-const selectedDateText = document.getElementById("selectedDate");
-const selectedTimeText = document.getElementById("selectedTime");
+    function updateDate() {
+        if (!dateInput || !dateInput.value) return;
 
-// კალენდრის გახსნა
-datePickerButton.addEventListener("click", () => {
-    if (dateInput.showPicker) {
-        dateInput.showPicker();
-    } else {
-        dateInput.click();
+        const [year, month, day] = dateInput.value.split("-");
+
+        const date = new Date(
+            Number(year),
+            Number(month) - 1,
+            Number(day)
+        );
+
+        const formatted = new Intl.DateTimeFormat("ka-GE", {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        }).format(date);
+
+        if (selectedDate) selectedDate.textContent = formatted;
+        if (previewDate) previewDate.textContent = formatted;
     }
+
+    function updateTime() {
+        if (!timeInput || !timeInput.value) return;
+
+        const [hours, minutes] = timeInput.value.split(":");
+
+        const formatted = `${hours}:${minutes}`;
+
+        if (selectedTime) selectedTime.textContent = formatted;
+        if (previewTime) previewTime.textContent = formatted;
+    }
+
+    dateInput?.addEventListener("change", updateDate);
+    dateInput?.addEventListener("input", updateDate);
+
+    timeInput?.addEventListener("change", updateTime);
+    timeInput?.addEventListener("input", updateTime);
+
+    dateButton?.addEventListener("click", () => {
+        if (dateInput.showPicker) {
+            dateInput.showPicker();
+        } else {
+            dateInput.click();
+        }
+    });
+
+    timeButton?.addEventListener("click", () => {
+        if (timeInput.showPicker) {
+            timeInput.showPicker();
+        } else {
+            timeInput.click();
+        }
+    });
+
+    updateDate();
+    updateTime();
 });
-
-// საათის გახსნა
-timePickerButton.addEventListener("click", () => {
-    if (timeInput.showPicker) {
-        timeInput.showPicker();
-    } else {
-        timeInput.click();
-    }
-});
-
-// თარიღის განახლება
-function updateSelectedDate() {
-    if (!dateInput.value) {
-        selectedDateText.textContent = "აირჩიე თარიღი";
-        return;
-    }
-
-    const [year, month, day] = dateInput.value.split("-");
-
-    selectedDateText.textContent = `${day}.${month}.${year}`;
-}
-
-// დროის განახლება
-function updateSelectedTime() {
-    selectedTimeText.textContent =
-        timeInput.value || "აირჩიე დრო";
-}
-
-dateInput.addEventListener("change", updateSelectedDate);
-dateInput.addEventListener("input", updateSelectedDate);
-
-timeInput.addEventListener("change", updateSelectedTime);
-timeInput.addEventListener("input", updateSelectedTime);
-
-// საწყისი მდგომარეობა
-updateSelectedDate();
-updateSelectedTime();
-
 </script>
 
 
