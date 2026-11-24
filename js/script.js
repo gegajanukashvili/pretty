@@ -1472,7 +1472,7 @@ function startBookingCelebration() {
       </div>
 
       <h2 class="booking-title">
-        ოპაა... თუ მოინდომებ შეგძლებია!
+       ხოხ... ერთი ამას დამიხედეთ!
       </h2>
 
       <p class="booking-subtitle">
@@ -1876,3 +1876,4 @@ if (noQuestion) {
 -------------------------------- */
 
 showScreen(questionScreen);
+ოპა
