@@ -1,4 +1,3 @@
-
 /* --------------------------------
    DOM ELEMENTS
 -------------------------------- */
@@ -63,6 +62,9 @@ let historyProtectionActive = false;
 
 let pendingNavigationUrl = null;
 
+// No ღილაკის საწყისი ვერტიკალური პოზიცია
+let noButtonStartY = null;
+
 const escapeDistance = 85;
 const escapeCooldown = 250;
 
@@ -98,11 +100,9 @@ function releaseBookingProtection() {
 
 
 /*
-   შენიშვნა:
    beforeunload განზრახ ამოღებულია.
    ბრაუზერის დახურვის/განახლებისას საკუთარი
    HTML ალერტის ჩვენება შეუძლებელია.
-   ამიტომ ბრაუზერის სტანდარტული გაფრთხილებაც აღარ გამოჩნდება.
 */
 
 
@@ -145,11 +145,11 @@ document.addEventListener("click", (event) => {
 
 function showNavigationAlert() {
   showCuteValidation(
-    "ეეე, სად გარბიხარ? 😂 ჯერ ჩვენი პაემნის გეგმა უნდა დაასრულო! ბაჭია უკვე გელოდება. 🐰💕",
+    "ეეე, სად გარბიხარ ქალბატონო? 😂 დაჯავშნე ბოლომდე . 🐰💕",
     "🎀",
     {
       confirmText: "დავრჩები! 💗",
-      cancelText: "მაინც გავდივარ",
+      cancelText: "ჰოო დავრჩები!",
 
       onConfirm: () => {
         pendingNavigationUrl = null;
@@ -481,8 +481,6 @@ if (dateInput) {
 function formatDateInGeorgian(dateString) {
   if (!dateString) return "";
 
-  // ვქმნით თარიღს შუადღის დროით, რათა დროის სარტყელმა
-  // კალენდარული დღე შემთხვევით არ შეცვალოს.
   const selectedDate = new Date(`${dateString}T12:00:00`);
 
   if (Number.isNaN(selectedDate.getTime())) {
@@ -580,11 +578,13 @@ function initializeNoButton() {
   const position = getStagePosition(noButton);
 
   noButton.style.transition = "none";
-
   noButton.classList.add("moving");
 
   noButton.style.left = `${position.x}px`;
   noButton.style.top = `${position.y}px`;
+
+  // ვინახავთ საწყის ვერტიკალურ პოზიციას
+  noButtonStartY = position.y;
 
   noButtonInitialized = true;
 
@@ -607,14 +607,39 @@ function getNewButtonPosition(pointerX, pointerY) {
 
   const padding = 12;
 
-  const maxX = Math.max(padding, stageWidth - buttonWidth - padding);
-  const maxY = Math.max(padding, stageHeight - buttonHeight - padding);
+  const maxX = Math.max(
+    padding,
+    stageWidth - buttonWidth - padding
+  );
 
+  // მიმდინარე პოზიცია
   const current = getStagePosition(noButton);
+
+  /*
+    მთავარი შეზღუდვა:
+    ღილაკი ვერტიკალურად ვერ ჩამოვა
+    თავის საწყის პოზიციაზე ქვემოთ.
+  */
+
+  const originalY = noButtonStartY ?? current.y;
+
+  const maxAllowedY = Math.max(
+    0,
+    Math.min(
+      originalY,
+      stageHeight - buttonHeight - padding
+    )
+  );
+
+  const minY = Math.min(padding, maxAllowedY);
+  const maxY = maxAllowedY;
 
   const candidates = [];
 
-  const yesRect = yesButton ? yesButton.getBoundingClientRect() : null;
+  const yesRect = yesButton
+    ? yesButton.getBoundingClientRect()
+    : null;
+
   const stageRect = stage.getBoundingClientRect();
 
   let yesX = 0;
@@ -625,10 +650,14 @@ function getNewButtonPosition(pointerX, pointerY) {
     yesY = yesRect.top - stageRect.top - stage.clientTop;
   }
 
-  for (let i = 0; i < 120; i++) {
-    const x = padding + Math.random() * Math.max(0, maxX - padding);
-    const y = padding + Math.random() * Math.max(0, maxY - padding);
+  for (let i = 0; i < 180; i++) {
+    const x = padding +
+      Math.random() * Math.max(0, maxX - padding);
 
+    const y = minY +
+      Math.random() * Math.max(0, maxY - minY);
+
+    // არ დარჩეს თითქმის იმავე ადგილას
     const distanceFromCurrent = Math.hypot(
       x - current.x,
       y - current.y
@@ -636,6 +665,7 @@ function getNewButtonPosition(pointerX, pointerY) {
 
     if (distanceFromCurrent < 75) continue;
 
+    // არ დაეფაროს Yes ღილაკს
     if (yesRect) {
       const overlapsYes =
         x < yesX + yesRect.width + 15 &&
@@ -646,11 +676,13 @@ function getNewButtonPosition(pointerX, pointerY) {
       if (overlapsYes) continue;
     }
 
+    // მაუსისგან მაქსიმალურად შორს გადავიდეს
     const distanceFromPointer = Math.hypot(
       x + buttonWidth / 2 - pointerX,
       y + buttonHeight / 2 - pointerY
     );
 
+    // ეცადოს წინა პოზიციებს არ დაუბრუნდეს
     const historyDistance = previousPositions.length
       ? Math.min(
           ...previousPositions.map(position =>
@@ -664,7 +696,11 @@ function getNewButtonPosition(pointerX, pointerY) {
       distanceFromCurrent * 0.5 +
       historyDistance * 0.25;
 
-    candidates.push({ x, y, score });
+    candidates.push({
+      x,
+      y,
+      score
+    });
   }
 
   candidates.sort((a, b) => b.score - a.score);
@@ -673,7 +709,11 @@ function getNewButtonPosition(pointerX, pointerY) {
     return candidates[0];
   }
 
-  return { x: maxX, y: maxY };
+  // სათადარიგო პოზიციაც საწყის სიმაღლეზე ქვემოთ არ იქნება
+  return {
+    x: maxX,
+    y: maxAllowedY
+  };
 }
 
 
@@ -690,10 +730,11 @@ function moveNoButton(pointerX, pointerY) {
 
   lastEscapeTime = now;
 
+  // ჯერ დავაფიქსიროთ საწყისი პოზიცია
+  initializeNoButton();
+
   isMoving = true;
   isRunaway = true;
-
-  initializeNoButton();
 
   const best = getNewButtonPosition(pointerX, pointerY);
 
@@ -747,8 +788,15 @@ if (stage && noButton) {
     const mouseX = event.clientX;
     const mouseY = event.clientY;
 
-    const closestX = Math.max(rect.left, Math.min(mouseX, rect.right));
-    const closestY = Math.max(rect.top, Math.min(mouseY, rect.bottom));
+    const closestX = Math.max(
+      rect.left,
+      Math.min(mouseX, rect.right)
+    );
+
+    const closestY = Math.max(
+      rect.top,
+      Math.min(mouseY, rect.bottom)
+    );
 
     const distance = Math.hypot(
       mouseX - closestX,
@@ -758,8 +806,11 @@ if (stage && noButton) {
     if (distance <= escapeDistance) {
       const stageRect = stage.getBoundingClientRect();
 
-      const pointerX = event.clientX - stageRect.left - stage.clientLeft;
-      const pointerY = event.clientY - stageRect.top - stage.clientTop;
+      const pointerX =
+        event.clientX - stageRect.left - stage.clientLeft;
+
+      const pointerY =
+        event.clientY - stageRect.top - stage.clientTop;
 
       handleNoEncounter(pointerX, pointerY);
     }
@@ -772,8 +823,11 @@ if (stage && noButton) {
 
     const stageRect = stage.getBoundingClientRect();
 
-    const pointerX = event.clientX - stageRect.left - stage.clientLeft;
-    const pointerY = event.clientY - stageRect.top - stage.clientTop;
+    const pointerX =
+      event.clientX - stageRect.left - stage.clientLeft;
+
+    const pointerY =
+      event.clientY - stageRect.top - stage.clientTop;
 
     handleNoEncounter(pointerX, pointerY);
   });
@@ -826,6 +880,7 @@ function startBackgroundMusic() {
     console.log("Background music playback error:", error);
   });
 }
+
 
 function stopBackgroundMusic() {
   if (!backgroundMusic) return;
@@ -908,7 +963,10 @@ function startCelebration() {
     piece.style.animationDelay = `${Math.random() * 2}s`;
     piece.style.animationDuration = `${2.5 + Math.random() * 2}s`;
 
-    piece.style.setProperty("--drift", `${Math.random() * 180 - 90}px`);
+    piece.style.setProperty(
+      "--drift",
+      `${Math.random() * 180 - 90}px`
+    );
 
     celebration.appendChild(piece);
   }
@@ -926,7 +984,10 @@ function startCelebration() {
     decoration.style.animationDelay = `${Math.random() * 1.5}s`;
     decoration.style.animationDuration = `${2 + Math.random() * 2}s`;
 
-    decoration.style.setProperty("--float", `${Math.random() * 50 + 20}px`);
+    decoration.style.setProperty(
+      "--float",
+      `${Math.random() * 50 + 20}px`
+    );
 
     celebration.appendChild(decoration);
   }
@@ -1258,9 +1319,18 @@ function addBookingCelebrationStyles() {
     }
 
     @keyframes envelopeBounce {
-      0% { transform: translateY(40px) scale(.7) rotate(-7deg); opacity: 0; }
-      70% { transform: translateY(-12px) scale(1.06) rotate(3deg); opacity: 1; }
-      100% { transform: translateY(0) scale(1) rotate(0); opacity: 1; }
+      0% {
+        transform: translateY(40px) scale(.7) rotate(-7deg);
+        opacity: 0;
+      }
+      70% {
+        transform: translateY(-12px) scale(1.06) rotate(3deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(0) scale(1) rotate(0);
+        opacity: 1;
+      }
     }
 
     @keyframes envelopeOpen {
@@ -1296,8 +1366,14 @@ function addBookingCelebrationStyles() {
     }
 
     @keyframes bunnyTextIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @keyframes bunnyHeartFloat {
@@ -1313,8 +1389,14 @@ function addBookingCelebrationStyles() {
     }
 
     @keyframes bunnyTwinkle {
-      from { opacity: .25; transform: scale(.6) rotate(0); }
-      to { opacity: 1; transform: scale(1.3) rotate(45deg); }
+      from {
+        opacity: .25;
+        transform: scale(.6) rotate(0);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1.3) rotate(45deg);
+      }
     }
 
     .booking-celebration.booking-exit {
@@ -1548,7 +1630,7 @@ if (confirmButton) {
 
     if (!selectedPlans.length) {
       showCuteValidation(
-        "აქტივობა მაინც უნდა აირჩიო! რაიყო, კიარ შეგჭამ? 😂💕",
+        "სად მივდივართ აირჩიე! არ მოგერიდოს კაცო 😂💕",
         "🐰"
       );
       return;
@@ -1596,8 +1678,6 @@ if (confirmButton) {
         );
       }
 
-      // თარიღი საბოლოო გვერდზე ქართულად:
-      // მაგალითად: ოთხშაბათი, 25 ნოემბერი, 2026
       if (resultDate) {
         resultDate.textContent = formatDateInGeorgian(selectedDate);
       }
@@ -1647,6 +1727,9 @@ if (restartButton) {
     isRunaway = false;
     isMoving = false;
     noButtonInitialized = false;
+
+    // საწყისი პოზიცია თავიდან უნდა დაფიქსირდეს
+    noButtonStartY = null;
 
     lastEscapeTime = 0;
     previousPositions = [];
@@ -1703,6 +1786,9 @@ if (restartButton) {
     releaseBookingProtection();
 
     showScreen(questionScreen);
+
+    // საწყისი პოზიცია ახლიდან დავაფიქსიროთ
+    initializeNoButton();
   });
 }
 
@@ -1790,4 +1876,3 @@ if (noQuestion) {
 -------------------------------- */
 
 showScreen(questionScreen);
-ოპაა
